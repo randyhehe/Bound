@@ -13,7 +13,7 @@ Common symbol       size              file
 tasks               0x18              main.o
 blankMatrix         0x8               main.o
 matrix              0x8               main.o
-explosions          0xb6              main.o
+explosions          0x16a             main.o
 userMatrix          0xa               main.o
 matrix2             0x8               main.o
 
@@ -36,11 +36,9 @@ Discarded input sections
  .text.d3_setRow
                 0x00000000       0x2a main.o
  .text.pushExplosion
-                0x00000000       0xa6 main.o
+                0x00000000       0xaa main.o
  .text.displayExplosion
                 0x00000000       0x58 main.o
- .text.DeathTick
-                0x00000000        0x4 main.o
  .bss.TimerFlag
                 0x00000000        0x1 main.o
  .rodata.tasksPeriodGCD
@@ -211,7 +209,7 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000      0xd3e
+.text           0x00000000      0xe1e
  *(.vectors)
  .vectors       0x00000000       0x8c C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.0.98/gcc/dev/atmega1284/avr51/crtatmega1284.o
                 0x00000000                __vector_default
@@ -346,17 +344,20 @@ END GROUP
  .text.KPTick   0x000005cc      0x18a main.o
                 0x000005cc                KPTick
  .text.initExplosions
-                0x00000756       0x32 main.o
+                0x00000756       0x3e main.o
                 0x00000756                initExplosions
- .text.ExpTick  0x00000788      0x164 main.o
-                0x00000788                ExpTick
- .text.main     0x000008ec      0x44e main.o
-                0x000008ec                main
-                0x00000d3a                . = ALIGN (0x2)
+ .text.DeathTick
+                0x00000794       0xb4 main.o
+                0x00000794                DeathTick
+ .text.ExpTick  0x00000848      0x16c main.o
+                0x00000848                ExpTick
+ .text.main     0x000009b4      0x466 main.o
+                0x000009b4                main
+                0x00000e1a                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x00000d3a        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr51\libgcc.a(_exit.o)
-                0x00000d3a                _exit
-                0x00000d3a                exit
+ .fini9         0x00000e1a        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr51\libgcc.a(_exit.o)
+                0x00000e1a                _exit
+                0x00000e1a                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -375,11 +376,11 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x00000d3a        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr51\libgcc.a(_exit.o)
+ .fini0         0x00000e1a        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr51\libgcc.a(_exit.o)
  *(.fini0)
-                0x00000d3e                _etext = .
+                0x00000e1e                _etext = .
 
-.data           0x00800100        0x6 load address 0x00000d3e
+.data           0x00800100        0x6 load address 0x00000e1e
                 0x00800100                PROVIDE (__data_start, .)
  *(.data)
  *(.data*)
@@ -396,7 +397,7 @@ END GROUP
                 0x00800106                _edata = .
                 0x00800106                PROVIDE (__data_end, .)
 
-.bss            0x00800106       0xfd
+.bss            0x00800106      0x1b1
                 0x00800106                PROVIDE (__bss_start, .)
  *(.bss)
  *(.bss*)
@@ -416,23 +417,23 @@ END GROUP
                 0x0080010f        0x4 main.o
                 0x0080010f                _avr_timer_cntcurr
  *(COMMON)
- COMMON         0x00800113       0xf0 main.o
+ COMMON         0x00800113      0x1a4 main.o
                 0x00800113                tasks
                 0x0080012b                blankMatrix
                 0x00800133                matrix
                 0x0080013b                explosions
-                0x008001f1                userMatrix
-                0x008001fb                matrix2
-                0x00800203                PROVIDE (__bss_end, .)
-                0x00000d3e                __data_load_start = LOADADDR (.data)
-                0x00000d44                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x008002a5                userMatrix
+                0x008002af                matrix2
+                0x008002b7                PROVIDE (__bss_end, .)
+                0x00000e1e                __data_load_start = LOADADDR (.data)
+                0x00000e24                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x00800203        0x0
-                0x00800203                PROVIDE (__noinit_start, .)
+.noinit         0x008002b7        0x0
+                0x008002b7                PROVIDE (__noinit_start, .)
  *(.noinit*)
-                0x00800203                PROVIDE (__noinit_end, .)
-                0x00800203                _end = .
-                0x00800203                PROVIDE (__heap_start, .)
+                0x008002b7                PROVIDE (__noinit_end, .)
+                0x008002b7                _end = .
+                0x008002b7                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
  *(.eeprom*)
@@ -504,30 +505,30 @@ END GROUP
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000      0xf45
+.debug_info     0x00000000      0xfb2
  *(.debug_info .gnu.linkonce.wi.*)
- .debug_info    0x00000000      0xf45 main.o
+ .debug_info    0x00000000      0xfb2 main.o
 
-.debug_abbrev   0x00000000      0x3df
+.debug_abbrev   0x00000000      0x408
  *(.debug_abbrev)
- .debug_abbrev  0x00000000      0x3df main.o
+ .debug_abbrev  0x00000000      0x408 main.o
 
-.debug_line     0x00000000      0xb76
+.debug_line     0x00000000      0xbe8
  *(.debug_line .debug_line.* .debug_line_end)
- .debug_line    0x00000000      0xb76 main.o
+ .debug_line    0x00000000      0xbe8 main.o
 
-.debug_frame    0x00000000      0x334
+.debug_frame    0x00000000      0x358
  *(.debug_frame)
- .debug_frame   0x00000000      0x334 main.o
+ .debug_frame   0x00000000      0x358 main.o
 
 .debug_str      0x00000000      0x477
  *(.debug_str)
  .debug_str     0x00000000      0x477 main.o
                                 0x4cb (size before relaxing)
 
-.debug_loc      0x00000000     0x1076
+.debug_loc      0x00000000     0x1169
  *(.debug_loc)
- .debug_loc     0x00000000     0x1076 main.o
+ .debug_loc     0x00000000     0x1169 main.o
 
 .debug_macinfo
  *(.debug_macinfo)
@@ -547,9 +548,9 @@ END GROUP
 .debug_pubtypes
  *(.debug_pubtypes)
 
-.debug_ranges   0x00000000      0x1d0
+.debug_ranges   0x00000000      0x1e8
  *(.debug_ranges)
- .debug_ranges  0x00000000      0x1d0 main.o
+ .debug_ranges  0x00000000      0x1e8 main.o
 
 .debug_macro
  *(.debug_macro)

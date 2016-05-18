@@ -68,7 +68,6 @@ int main(void) {
 	userMatrix = initSingleUserMatrix(userMatrix);
 	
 	while (1) {
-		//d3_setMatrix(explosions.matricies[0]);
 		explosions = ExpTick(explosions);
 		DeathTick();
 		d3_setMatrixColor(userMatrix.m, GREEN);
@@ -91,34 +90,26 @@ int KPTick(int state) {
 				if (pressedButton == '4') {
 					if (userMatrix.row < 7) {
 						userMatrix.row++;
-						//userMatrix.m[userMatrix.row - 1][userMatrix.column] = 1;
 						userMatrix.m[userMatrix.row - 1] = SetBit(userMatrix.m[userMatrix.row - 1], userMatrix.column, 1);
 						userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
-						//userMatrix.m[userMatrix.row][userMatrix.column] = 0;
 					}
 				} else if (pressedButton == '2') {
 					if (userMatrix.column  < 7) {
 						userMatrix.column++;
-						//userMatrix.m[userMatrix.row][userMatrix.column - 1] = 1;
 						userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column - 1, 1);
 						userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
-						//userMatrix.m[userMatrix.row][userMatrix.column] = 0;
 					}
 				} else if (pressedButton == '5') {
 					if (userMatrix.row > 0) {
 						userMatrix.row--;
-						//userMatrix.m[userMatrix.row + 1][userMatrix.column] = 1;
 						userMatrix.m[userMatrix.row + 1] = SetBit(userMatrix.m[userMatrix.row + 1], userMatrix.column, 1);
 						userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
-						//userMatrix.m[userMatrix.row][userMatrix.column] = 0;
 					}
 				} else if (pressedButton == '8') {
 					if (userMatrix.column > 0) {
 						userMatrix.column--;
-						//userMatrix.m[userMatrix.row][userMatrix.column + 1] = 1;
 						userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column + 1, 1);
 						userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
-						//userMatrix.m[userMatrix.row][userMatrix.column] = 0;
 					}
 				}
 			state = KP_Pressed;
@@ -187,15 +178,13 @@ int ETIMERTick(int state) {
 }
 
 unsigned char DeathTick() {	
-	//if ((displayBlank == 0) && (explosions.matricies[explosions.displayIndex].m[userMatrix.row][userMatrix.column] == 0)) {
-		// Lose Game
-	//	userMatrix = initSingleUserMatrix(userMatrix); // place user back to original position
-	//	return 1;
-	//} else {
-	//	// Nothing
-	//	return 0;
-	//}
-	return 0;
+	if ((displayBlank == 0) && GetBit(explosions.matricies[explosions.displayIndex].m[userMatrix.row], userMatrix.column) == 0) {
+		userMatrix = initSingleUserMatrix(userMatrix);
+		return 1;
+	} else {
+		// nothing
+		return 0;
+	}
 }
 
 Explosions ExpTick(Explosions explosions) {	
