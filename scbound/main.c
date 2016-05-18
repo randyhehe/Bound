@@ -35,7 +35,8 @@ int main(void) {
 	TimerOn();
 	
 	matrix = clearSingleMatrix(matrix);
-
+	
+	/*
 	unsigned char alternate = 0;
 	for (unsigned char i = 1; i < 7; i++) {
 		for (unsigned char j = 0; j < 8; j++) {
@@ -64,6 +65,96 @@ int main(void) {
 	explosions = initExplosions(explosions);
 	explosions = pushExplosion(explosions, matrix, 350, 200);
 	explosions = pushExplosion(explosions, matrix2, 350, 200);
+	*/
+	
+	blankMatrix = clearSingleMatrix(blankMatrix);
+	
+	explosions = initExplosions(explosions);
+	
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[1] = SetBit(matrix.m[1], 0, 0);
+	matrix.m[6] = SetBit(matrix.m[6], 0, 0);
+	explosions = pushExplosion(explosions, matrix, 0, 20);
+	
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[1] = SetBit(matrix.m[1], 1, 0);
+	matrix.m[6] = SetBit(matrix.m[6], 1, 0);
+	explosions = pushExplosion(explosions, matrix, 0, 20);
+	
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[1] = SetBit(matrix.m[1], 2, 0);
+	matrix.m[6] = SetBit(matrix.m[6], 2, 0);
+	explosions = pushExplosion(explosions, matrix, 0, 20);
+	
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[1] = SetBit(matrix.m[1], 3, 0);
+	matrix.m[6] = SetBit(matrix.m[6], 3, 0);
+	explosions = pushExplosion(explosions, matrix, 0, 20);
+	
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[1] = SetBit(matrix.m[1], 4, 0);
+	matrix.m[6] = SetBit(matrix.m[6], 4, 0);
+	explosions = pushExplosion(explosions, matrix, 0, 20);
+	
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[1] = SetBit(matrix.m[1], 5, 0);
+	matrix.m[6] = SetBit(matrix.m[6], 5, 0);
+	explosions = pushExplosion(explosions, matrix, 0, 20);
+	
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[1] = SetBit(matrix.m[1], 6, 0);
+	matrix.m[6] = SetBit(matrix.m[6], 6, 0);
+	explosions = pushExplosion(explosions, matrix, 0, 20);
+	
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[1] = SetBit(matrix.m[1], 7, 0);
+	matrix.m[6] = SetBit(matrix.m[6], 7, 0);
+	explosions = pushExplosion(explosions, matrix, 0, 20);
+	
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[2] = SetBit(matrix.m[2], 7, 0);
+	matrix.m[5] = SetBit(matrix.m[5], 7, 0);
+	explosions = pushExplosion(explosions, matrix, 0, 20);
+	
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[2] = SetBit(matrix.m[2], 6, 0);
+	matrix.m[5] = SetBit(matrix.m[5], 6, 0);
+	explosions = pushExplosion(explosions, matrix, 0, 20);
+	
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[2] = SetBit(matrix.m[2], 5, 0);
+	matrix.m[5] = SetBit(matrix.m[5], 5, 0);
+	explosions = pushExplosion(explosions, matrix, 0, 20);
+	
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[2] = SetBit(matrix.m[2], 4, 0);
+	matrix.m[5] = SetBit(matrix.m[5], 4, 0);
+	explosions = pushExplosion(explosions, matrix, 0, 20);
+	
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[2] = SetBit(matrix.m[2], 3, 0);
+	matrix.m[5] = SetBit(matrix.m[5], 3, 0);
+	explosions = pushExplosion(explosions, matrix, 0, 20);
+	
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[2] = SetBit(matrix.m[2], 2, 0);
+	matrix.m[5] = SetBit(matrix.m[5], 2, 0);
+	explosions = pushExplosion(explosions, matrix, 0, 20);
+	
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[2] = SetBit(matrix.m[2], 1, 0);
+	matrix.m[5] = SetBit(matrix.m[5], 1, 0);
+	explosions = pushExplosion(explosions, matrix, 0, 20);
+	
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[2] = SetBit(matrix.m[2], 0, 0);
+	matrix.m[5] = SetBit(matrix.m[5], 0, 0);
+	explosions = pushExplosion(explosions, matrix, 0, 20);
+	
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[3] = 0x00;
+	matrix.m[4] = 0x00;
+	explosions = pushExplosion(explosions, matrix, 0, 20);
 	
 	userMatrix = initSingleUserMatrix(userMatrix);
 	
