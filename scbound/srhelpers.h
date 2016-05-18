@@ -2,6 +2,7 @@
 #define SRHELPERS_H
 
 #include "ledmatrix.h"
+#include "bit.h"
 
 #define PORT PORTB
 #define DATAPIN 0
@@ -10,11 +11,24 @@
 
 #define COLUMNPORT PORTD
 
+void shiftSR(unsigned char i);
+void shiftWhole(unsigned char val);
+void latchSR();
+void clearSR();
+
 // Shift one value
 void shiftSR(unsigned char i) {
     PORT = i << DATAPIN;
     PORT = PORT | (0x01 << SHIFTPIN);
     PORT = 0x00;
+}
+
+void shiftWhole(unsigned char val) {
+	for (unsigned char i = 0; i < 8; i++) {
+		PORT = GetBit(val, i) << DATAPIN;
+		PORT = PORT | (0x01 << SHIFTPIN);
+		PORT = 0x00; 
+	} latchSR();
 }
 
 // Latch current contents
@@ -24,7 +38,7 @@ void latchSR() {
 
 // Clear shift register
 void clearSR() {
-    for (int i = 0; i < 8; i++) {
+    for (unsigned char i = 0; i < 8; i++) {
         shiftSR(1);
     } latchSR();
 }

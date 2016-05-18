@@ -16,7 +16,6 @@ unsigned char displayBlank = 0;
 
 Explosions ExpTick(Explosions explosions);
 unsigned char DeathTick();
-Matrix UserTick(Matrix matrix);
 
 Explosions explosions;
 SingleMatrixUser userMatrix;
@@ -38,8 +37,8 @@ int main(void) {
 	matrix = clearSingleMatrix(matrix);
 
 	unsigned char alternate = 0;
-	for (int i = 1; i < 7; i++) {
-		for (int j = 0; j < 8; j++) {
+	for (unsigned char i = 1; i < 7; i++) {
+		for (unsigned char j = 0; j < 8; j++) {
 			matrix.m[i][j] = alternate;
 			if (alternate == 1) alternate = 0;
 			else if (alternate == 0) alternate = 1;
@@ -50,8 +49,8 @@ int main(void) {
 	
 	matrix2 = clearSingleMatrix(matrix2);
 	alternate = 1;
-	for (int i = 1; i < 7; i++) {
-		for (int j = 0; j < 8; j++) {
+	for (unsigned char i = 1; i < 7; i++) {
+		for (unsigned char j = 0; j < 8; j++) {
 			matrix2.m[i][j] = alternate;
 			if (alternate == 1) alternate = 0;
 			else if (alternate == 0) alternate = 1;

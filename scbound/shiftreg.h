@@ -12,6 +12,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include "srhelpers.h"
+#include "bit.h"
 
 void d3_clearSR() {
 	clearSR();
@@ -24,63 +25,38 @@ void d3_setColumn(unsigned char column) {
 }
 
 void d3_setRow(unsigned char m[8]) {
-	for (int i = 0; i < 8; i++) {
+	for (unsigned char i = 0; i < 8; i++) {
 		shiftSR(m[i]);
 	} latchSR();
-}
-
-void d3_setRowMatrix(Matrix matrix, unsigned char column) {
-	d3_clearSR();
-	
-	unsigned char r[8];
-	unsigned char g[8];
-	unsigned char b[8];
-	
-	for (int i = 0; i < 8; i++) {
-		r[i] = matrix.red[i][column];
-		g[i] = matrix.green[i][column];
-		b[i] = matrix.blue[i][column];
-	}
-	
-	d3_setRow(g);
-	d3_setRow(r);
-	d3_setRow(b);
-}
-
-void d3_setMatrix(Matrix matrix) {
-	for (int i = 0; i < 8; i++) {
-		d3_setColumn(i);
-		d3_setRowMatrix(matrix, i);
-		_delay_ms(DELAYTIME); //set to fix bad lighting. adjust depending on how the program runs
-		d3_clearSR();
-	}	
 }
 
 void d3_setRowMatrixColor(unsigned char m[8][8], unsigned char column, unsigned char color) {
 	d3_clearSR();
 	
-	unsigned char arr[8];
-	
+	unsigned char arr = 0;
 	for (unsigned char i = 0; i < 8; i++) {
-		arr[i] = m[i][column];
+		arr = SetBit(arr, i, m[i][column]);
 	}
 	
 	switch (color) {
 		case RED:
 			clearSR();
-			d3_setRow(arr);
+			shiftWhole(arr);
 			clearSR();
 			break;
+			
 		case GREEN:
-			d3_setRow(arr);
+			shiftWhole(arr);
 			clearSR();
 			clearSR();
 			break;
+			
 		case BLUE:
 			clearSR();
 			clearSR();
-			d3_setRow(arr);
+			shiftWhole(arr);
 			break;
+			
 		default:
 			break;
 	}

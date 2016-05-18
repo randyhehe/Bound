@@ -14,7 +14,7 @@ typedef struct Explosions {
 } Explosions;
 
 Explosions initExplosions(Explosions explosions) {
-	for (int i = 0; i < NUMEXP; i++) {
+	for (unsigned char i = 0; i < NUMEXP; i++) {
 		clearSingleMatrix(explosions.matricies[i]);
 	}
 	explosions.index = 0;
