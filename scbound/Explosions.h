@@ -3,8 +3,10 @@
 
 #define NUMEXP 15
 
+#include "ledmatrix.h"
+
 typedef struct Explosions {
-	Matrix matricies[NUMEXP];
+	SingleMatrix matricies[NUMEXP];
 	unsigned short timeBetween[NUMEXP];
 	unsigned short timeDuration[NUMEXP];
 	unsigned char index;
@@ -13,7 +15,7 @@ typedef struct Explosions {
 
 Explosions initExplosions(Explosions explosions) {
 	for (int i = 0; i < NUMEXP; i++) {
-		clearMatrix(explosions.matricies[i]);
+		clearSingleMatrix(explosions.matricies[i]);
 	}
 	explosions.index = 0;
 	explosions.displayIndex = 0;
@@ -21,7 +23,7 @@ Explosions initExplosions(Explosions explosions) {
 	return explosions;
 }
 
-Explosions pushExplosion(Explosions explosions, Matrix matrix, unsigned short a, unsigned short b) {
+Explosions pushExplosion(Explosions explosions, SingleMatrix matrix, unsigned short a, unsigned short b) {
 	explosions.matricies[explosions.index] = matrix;
 	explosions.timeBetween[explosions.index] = a;
 	explosions.timeDuration[explosions.index] = b;
@@ -42,7 +44,7 @@ void displayExplosion(Explosions explosions) {
 	}
 	
 	// Display explosion
-	d3_setMatrix(explosions.matricies[explosions.displayIndex]);
+	d3_setMatrixColor(explosions.matricies[explosions.displayIndex].m, RED);
 	explosions.displayIndex++;
 }
 

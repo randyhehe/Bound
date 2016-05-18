@@ -20,8 +20,8 @@ int ETIMERTick(int state);
 
 void initTasks() {
 	tasks[0].state = KP_SMStart;
-	tasks[0].period = 100;
-	tasks[0].elapsedTime = 100;
+	tasks[0].period = 20;
+	tasks[0].elapsedTime = 20;
 	tasks[0].TickFct = &KPTick;
 
 	tasks[1].state = ETIMER_SMStart;

@@ -9,35 +9,38 @@
 //#include <avr/delay.h>
 //#include "USART_1284.h"
 
-Matrix matrix;
-Matrix matrix2;
-Matrix blankMatrix;
-Matrix userMatrix;
-
 unsigned long contClock = 0;
 unsigned short timeBetween = 500;
 unsigned char shouldSwitch = 0;
 unsigned char displayBlank = 0;
 
 Explosions ExpTick(Explosions explosions);
+unsigned char DeathTick();
 Matrix UserTick(Matrix matrix);
+
+Explosions explosions;
+SingleMatrixUser userMatrix;
+SingleMatrix matrix;
+SingleMatrix matrix2;
+SingleMatrix blankMatrix;
 
 
 int main(void) {
 	DDRB = 0xFF; PORTB = 0x00;
 	DDRD = 0xFF; PORTD = 0x00;
+	DDRC = 0xF0; PORTC = 0x0F;
 	
 	initTasks();
 	
 	TimerSet(1);
 	TimerOn();
 	
-	matrix = clearMatrix(matrix);
+	matrix = clearSingleMatrix(matrix);
 
 	unsigned char alternate = 0;
 	for (int i = 1; i < 7; i++) {
 		for (int j = 0; j < 8; j++) {
-			matrix.red[i][j] = alternate;
+			matrix.m[i][j] = alternate;
 			if (alternate == 1) alternate = 0;
 			else if (alternate == 0) alternate = 1;
 		}
@@ -45,11 +48,11 @@ int main(void) {
 		else if (alternate == 0) alternate = 1;
 	}
 	
-	matrix2 = clearMatrix(matrix2);
+	matrix2 = clearSingleMatrix(matrix2);
 	alternate = 1;
 	for (int i = 1; i < 7; i++) {
 		for (int j = 0; j < 8; j++) {
-			matrix2.red[i][j] = alternate;
+			matrix2.m[i][j] = alternate;
 			if (alternate == 1) alternate = 0;
 			else if (alternate == 0) alternate = 1;
 		}
@@ -57,20 +60,19 @@ int main(void) {
 		else if (alternate == 0) alternate = 1;
 	}
 	
-	blankMatrix = clearMatrix(blankMatrix);
+	blankMatrix = clearSingleMatrix(blankMatrix);
 	
-	Explosions explosions;
 	explosions = initExplosions(explosions);
 	explosions = pushExplosion(explosions, matrix, 350, 200);
 	explosions = pushExplosion(explosions, matrix2, 350, 200);
 	
-	userMatrix = clearMatrix(userMatrix);
-	userMatrix.green[0][3] = 0;
+	userMatrix = initSingleUserMatrix(userMatrix);
 	
 	while (1) {
 		//d3_setMatrix(explosions.matricies[0]);
 		explosions = ExpTick(explosions);
-		d3_setMatrix(userMatrix);
+		DeathTick();
+		d3_setMatrixColor(userMatrix.m, GREEN);
 	}
 }
 
@@ -87,6 +89,31 @@ int KPTick(int state) {
 		if (pressedButton == '\0') {
 			state = KP_Wait;
 			} else if (pressedButton != '\0') {
+				if (pressedButton == '4') {
+					if (userMatrix.row < 7) {
+						userMatrix.row++;
+						userMatrix.m[userMatrix.row - 1][userMatrix.column] = 1;
+						userMatrix.m[userMatrix.row][userMatrix.column] = 0;
+					}
+				} else if (pressedButton == '2') {
+					if (userMatrix.column  < 7) {
+						userMatrix.column++;
+						userMatrix.m[userMatrix.row][userMatrix.column - 1] = 1;
+						userMatrix.m[userMatrix.row][userMatrix.column] = 0;
+					}
+				} else if (pressedButton == '5') {
+					if (userMatrix.row > 0) {
+						userMatrix.row--;
+						userMatrix.m[userMatrix.row + 1][userMatrix.column] = 1;
+						userMatrix.m[userMatrix.row][userMatrix.column] = 0;
+					}
+				} else if (pressedButton == '8') {
+					if (userMatrix.column > 0) {
+						userMatrix.column--;
+						userMatrix.m[userMatrix.row][userMatrix.column + 1] = 1;
+						userMatrix.m[userMatrix.row][userMatrix.column] = 0;
+					}
+				}
 			state = KP_Pressed;
 		}
 		break;
@@ -152,6 +179,17 @@ int ETIMERTick(int state) {
 	return state;
 }
 
+unsigned char DeathTick() {	
+	if ((displayBlank == 0) && (explosions.matricies[explosions.displayIndex].m[userMatrix.row][userMatrix.column] == 0)) {
+		// Lose Game
+		userMatrix = initSingleUserMatrix(userMatrix); // place user back to original position
+		return 1;
+	} else {
+		// Nothing
+		return 0;
+	}
+}
+
 Explosions ExpTick(Explosions explosions) {	
 	// Return if empty (Protection code)
 	if (explosions.index == 0) {
@@ -163,9 +201,9 @@ Explosions ExpTick(Explosions explosions) {
 	}
 	
 	if (displayBlank == 0)
-		d3_setMatrix(explosions.matricies[explosions.displayIndex]);
+		d3_setMatrixColor(explosions.matricies[explosions.displayIndex].m, RED);
 	else if (displayBlank == 1)
-		d3_setMatrix(blankMatrix);
+		d3_setMatrixColor(blankMatrix.m, RED);
 	
 	if (displayBlank == 0 && contClock >= explosions.timeDuration[explosions.displayIndex]) {
 		displayBlank = 1;
