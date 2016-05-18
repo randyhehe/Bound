@@ -39,7 +39,7 @@ int main(void) {
 	unsigned char alternate = 0;
 	for (unsigned char i = 1; i < 7; i++) {
 		for (unsigned char j = 0; j < 8; j++) {
-			matrix.m[i][j] = alternate;
+			matrix.m[i] = SetBit(matrix.m[i], j, alternate);
 			if (alternate == 1) alternate = 0;
 			else if (alternate == 0) alternate = 1;
 		}
@@ -51,7 +51,7 @@ int main(void) {
 	alternate = 1;
 	for (unsigned char i = 1; i < 7; i++) {
 		for (unsigned char j = 0; j < 8; j++) {
-			matrix2.m[i][j] = alternate;
+			matrix2.m[i] = SetBit(matrix2.m[i], j, alternate);
 			if (alternate == 1) alternate = 0;
 			else if (alternate == 0) alternate = 1;
 		}
@@ -91,26 +91,34 @@ int KPTick(int state) {
 				if (pressedButton == '4') {
 					if (userMatrix.row < 7) {
 						userMatrix.row++;
-						userMatrix.m[userMatrix.row - 1][userMatrix.column] = 1;
-						userMatrix.m[userMatrix.row][userMatrix.column] = 0;
+						//userMatrix.m[userMatrix.row - 1][userMatrix.column] = 1;
+						userMatrix.m[userMatrix.row - 1] = SetBit(userMatrix.m[userMatrix.row - 1], userMatrix.column, 1);
+						userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
+						//userMatrix.m[userMatrix.row][userMatrix.column] = 0;
 					}
 				} else if (pressedButton == '2') {
 					if (userMatrix.column  < 7) {
 						userMatrix.column++;
-						userMatrix.m[userMatrix.row][userMatrix.column - 1] = 1;
-						userMatrix.m[userMatrix.row][userMatrix.column] = 0;
+						//userMatrix.m[userMatrix.row][userMatrix.column - 1] = 1;
+						userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column - 1, 1);
+						userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
+						//userMatrix.m[userMatrix.row][userMatrix.column] = 0;
 					}
 				} else if (pressedButton == '5') {
 					if (userMatrix.row > 0) {
 						userMatrix.row--;
-						userMatrix.m[userMatrix.row + 1][userMatrix.column] = 1;
-						userMatrix.m[userMatrix.row][userMatrix.column] = 0;
+						//userMatrix.m[userMatrix.row + 1][userMatrix.column] = 1;
+						userMatrix.m[userMatrix.row + 1] = SetBit(userMatrix.m[userMatrix.row + 1], userMatrix.column, 1);
+						userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
+						//userMatrix.m[userMatrix.row][userMatrix.column] = 0;
 					}
 				} else if (pressedButton == '8') {
 					if (userMatrix.column > 0) {
 						userMatrix.column--;
-						userMatrix.m[userMatrix.row][userMatrix.column + 1] = 1;
-						userMatrix.m[userMatrix.row][userMatrix.column] = 0;
+						//userMatrix.m[userMatrix.row][userMatrix.column + 1] = 1;
+						userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column + 1, 1);
+						userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
+						//userMatrix.m[userMatrix.row][userMatrix.column] = 0;
 					}
 				}
 			state = KP_Pressed;
@@ -179,14 +187,15 @@ int ETIMERTick(int state) {
 }
 
 unsigned char DeathTick() {	
-	if ((displayBlank == 0) && (explosions.matricies[explosions.displayIndex].m[userMatrix.row][userMatrix.column] == 0)) {
+	//if ((displayBlank == 0) && (explosions.matricies[explosions.displayIndex].m[userMatrix.row][userMatrix.column] == 0)) {
 		// Lose Game
-		userMatrix = initSingleUserMatrix(userMatrix); // place user back to original position
-		return 1;
-	} else {
-		// Nothing
-		return 0;
-	}
+	//	userMatrix = initSingleUserMatrix(userMatrix); // place user back to original position
+	//	return 1;
+	//} else {
+	//	// Nothing
+	//	return 0;
+	//}
+	return 0;
 }
 
 Explosions ExpTick(Explosions explosions) {	

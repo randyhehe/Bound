@@ -30,12 +30,12 @@ void d3_setRow(unsigned char m[8]) {
 	} latchSR();
 }
 
-void d3_setRowMatrixColor(unsigned char m[8][8], unsigned char column, unsigned char color) {
+void d3_setRowMatrixColor(unsigned char m[8], unsigned char column, unsigned char color) {
 	d3_clearSR();
 	
 	unsigned char arr = 0;
 	for (unsigned char i = 0; i < 8; i++) {
-		arr = SetBit(arr, i, m[i][column]);
+		arr = SetBit(arr, i, GetBit(m[i], column));
 	}
 	
 	switch (color) {
@@ -62,7 +62,7 @@ void d3_setRowMatrixColor(unsigned char m[8][8], unsigned char column, unsigned 
 	}
 }
 
-void d3_setMatrixColor(unsigned char m[8][8], unsigned char color) {
+void d3_setMatrixColor(unsigned char m[8], unsigned char color) {
 	for (unsigned char i = 0; i < 8; i++) {
 		d3_setColumn(i);
 		d3_setRowMatrixColor(m, i, color);
