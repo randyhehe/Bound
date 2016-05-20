@@ -1,14 +1,14 @@
 #ifndef EXPLOSIONS_H_
 #define EXPLOSIONS_H_
 
-#define NUMEXP 20
+#define NUMEXP 35 
 
 #include "ledmatrix.h"
 
 typedef struct Explosions {
 	SingleMatrix matricies[NUMEXP];
-	unsigned short timeBetween[NUMEXP];
-	unsigned short timeDuration[NUMEXP];
+	unsigned char timeBetween[NUMEXP];
+	unsigned char timeDuration[NUMEXP];
 	unsigned char index;
 	unsigned char displayIndex;
 } Explosions;
@@ -23,7 +23,7 @@ Explosions initExplosions(Explosions explosions) {
 	return explosions;
 }
 
-Explosions pushExplosion(Explosions explosions, SingleMatrix matrix, unsigned short a, unsigned short b) {
+Explosions pushExplosion(Explosions explosions, SingleMatrix matrix, unsigned char a, unsigned char b) {
 	explosions.matricies[explosions.index] = matrix;
 	explosions.timeBetween[explosions.index] = a;
 	explosions.timeDuration[explosions.index] = b;
