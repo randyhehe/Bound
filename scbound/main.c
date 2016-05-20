@@ -10,8 +10,6 @@
 //#include "USART_1284.h"
 
 unsigned long contClock = 0;
-unsigned short timeBetween = 500;
-unsigned char shouldSwitch = 0;
 unsigned char displayBlank = 0;
 
 Explosions ExpTick(Explosions explosions);
@@ -257,14 +255,7 @@ int ETIMERTick(int state) {
 		case ETIMER_Wait:
 			cnt++;
 			contClock++;
-			if (cnt <= timeBetween) {
-				// Do nothing
-				} else if (cnt > timeBetween) {
-				if (shouldSwitch == 0) shouldSwitch = 1;
-				else if (shouldSwitch == 1) shouldSwitch = 0;
-				cnt = 0;
-			}
-		}
+	}
 	return state;
 }
 
