@@ -1,6 +1,7 @@
 #define TASKSNUM 2
 
 #include <avr/io.h>
+#include <avr/eeprom.h>
 #include "timer.h"
 #include "shiftreg.h"
 #include "keypad.h"
@@ -69,90 +70,92 @@ int main(void) {
 	
 	explosions = initExplosions(explosions);
 	
-	matrix = clearSingleMatrix(matrix);
-	matrix.m[1] = SetBit(matrix.m[1], 0, 0);
-	matrix.m[6] = SetBit(matrix.m[6], 0, 0);
+	for (int i = 0; i < 8; i++) {
+		matrix.m[i] = eeprom_read_byte((uint8_t*)i);
+	}
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	matrix = clearSingleMatrix(matrix);
-	matrix.m[1] = SetBit(matrix.m[1], 1, 0);
-	matrix.m[6] = SetBit(matrix.m[6], 1, 0);
+	
+	for (int i = 0; i < 8; i++) {
+		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 8);
+	}
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	matrix = clearSingleMatrix(matrix);
-	matrix.m[1] = SetBit(matrix.m[1], 2, 0);
-	matrix.m[6] = SetBit(matrix.m[6], 2, 0);
+	for (int i = 0; i < 8; i++) {
+		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 16);
+	}
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	matrix = clearSingleMatrix(matrix);
-	matrix.m[1] = SetBit(matrix.m[1], 3, 0);
-	matrix.m[6] = SetBit(matrix.m[6], 3, 0);
+	for (int i = 0; i < 8; i++) {
+		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 24);
+	}
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	matrix = clearSingleMatrix(matrix);
-	matrix.m[1] = SetBit(matrix.m[1], 4, 0);
-	matrix.m[6] = SetBit(matrix.m[6], 4, 0);
+	for (int i = 0; i < 8; i++) {
+		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 32);
+	}
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	matrix = clearSingleMatrix(matrix);
-	matrix.m[1] = SetBit(matrix.m[1], 5, 0);
-	matrix.m[6] = SetBit(matrix.m[6], 5, 0);
+	for (int i = 0; i < 8; i++) {
+		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 40);
+	}
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	matrix = clearSingleMatrix(matrix);
-	matrix.m[1] = SetBit(matrix.m[1], 6, 0);
-	matrix.m[6] = SetBit(matrix.m[6], 6, 0);
+	for (int i = 0; i < 8; i++) {
+		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 48);
+	}
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	matrix = clearSingleMatrix(matrix);
-	matrix.m[1] = SetBit(matrix.m[1], 7, 0);
-	matrix.m[6] = SetBit(matrix.m[6], 7, 0);
+	for (int i = 0; i < 8; i++) {
+		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 56);
+	}
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	matrix = clearSingleMatrix(matrix);
-	matrix.m[2] = SetBit(matrix.m[2], 7, 0);
-	matrix.m[5] = SetBit(matrix.m[5], 7, 0);
+	for (int i = 0; i < 8; i++) {
+		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 64);
+	}
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	matrix = clearSingleMatrix(matrix);
-	matrix.m[2] = SetBit(matrix.m[2], 6, 0);
-	matrix.m[5] = SetBit(matrix.m[5], 6, 0);
+	for (int i = 0; i < 8; i++) {
+		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 72);
+	}
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	matrix = clearSingleMatrix(matrix);
-	matrix.m[2] = SetBit(matrix.m[2], 5, 0);
-	matrix.m[5] = SetBit(matrix.m[5], 5, 0);
+	for (int i = 0; i < 8; i++) {
+		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 80);
+	}
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	matrix = clearSingleMatrix(matrix);
-	matrix.m[2] = SetBit(matrix.m[2], 4, 0);
-	matrix.m[5] = SetBit(matrix.m[5], 4, 0);
+	for (int i = 0; i < 8; i++) {
+		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 88);
+	}
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	matrix = clearSingleMatrix(matrix);
-	matrix.m[2] = SetBit(matrix.m[2], 3, 0);
-	matrix.m[5] = SetBit(matrix.m[5], 3, 0);
+	for (int i = 0; i < 8; i++) {
+		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 96);
+	}
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	matrix = clearSingleMatrix(matrix);
-	matrix.m[2] = SetBit(matrix.m[2], 2, 0);
-	matrix.m[5] = SetBit(matrix.m[5], 2, 0);
+	for (int i = 0; i < 8; i++) {
+		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 104);
+	}
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	matrix = clearSingleMatrix(matrix);
-	matrix.m[2] = SetBit(matrix.m[2], 1, 0);
-	matrix.m[5] = SetBit(matrix.m[5], 1, 0);
+	for (int i = 0; i < 8; i++) {
+		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 112);
+	}
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	matrix = clearSingleMatrix(matrix);
-	matrix.m[2] = SetBit(matrix.m[2], 0, 0);
-	matrix.m[5] = SetBit(matrix.m[5], 0, 0);
+	for (int i = 0; i < 8; i++) {
+		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 120);
+	}
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	matrix = clearSingleMatrix(matrix);
-	matrix.m[3] = 0x00;
-	matrix.m[4] = 0x00;
+	for (int i = 0; i < 8; i++) {
+		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 128);
+	}
 	explosions = pushExplosion(explosions, matrix, 0, 2);
+	
 	
 	userMatrix = initSingleUserMatrix(userMatrix);
 	
