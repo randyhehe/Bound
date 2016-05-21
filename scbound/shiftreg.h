@@ -1,8 +1,6 @@
 #ifndef SHIFTREG_H
 #define SHIFTREG_H
 
-#define F_CPU 8000000
-
 #define RED 0
 #define BLUE 1
 #define GREEN 2
@@ -10,7 +8,6 @@
 #define DELAYTIME 0.6
 
 #include <avr/io.h>
-#include <util/delay.h>
 #include "srhelpers.h"
 #include "bit.h"
 

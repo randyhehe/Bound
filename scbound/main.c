@@ -4,11 +4,10 @@
 #include <avr/eeprom.h>
 #include "timer.h"
 #include "shiftreg.h"
-#include "keypad.h"
 #include "states.h"
 #include "Explosions.h"
 //#include <avr/delay.h>
-//#include "USART_1284.h"
+#include "USART_1284.h"
 
 unsigned long contClock = 0;
 unsigned char displayBlank = 0;
@@ -21,217 +20,154 @@ SingleMatrixUser userMatrix;
 SingleMatrix matrix;
 SingleMatrix matrix2;
 SingleMatrix blankMatrix;
+SingleMatrix wallMatrix;
+
+unsigned char movement;
 
 
 int main(void) {
 	DDRB = 0xFF; PORTB = 0x00;
 	DDRD = 0xFF; PORTD = 0x00;
-	DDRC = 0xF0; PORTC = 0x0F;
+	DDRC = 0xFF; PORTC = 0x00;
+	
+	initUSART(0);
 	
 	initTasks();
 	
 	TimerSet(1);
 	TimerOn();
 	
+	blankMatrix = clearSingleMatrix(blankMatrix);
+	
+	explosions = initExplosions(explosions);
+	
 	matrix = clearSingleMatrix(matrix);
-	
-	/*
-	unsigned char alternate = 0;
-	for (unsigned char i = 1; i < 7; i++) {
-		for (unsigned char j = 0; j < 8; j++) {
-			matrix.m[i] = SetBit(matrix.m[i], j, alternate);
-			if (alternate == 1) alternate = 0;
-			else if (alternate == 0) alternate = 1;
-		}
-		if (alternate == 1) alternate = 0;
-		else if (alternate == 0) alternate = 1;
-	}
-	
-	matrix2 = clearSingleMatrix(matrix2);
-	alternate = 1;
-	for (unsigned char i = 1; i < 7; i++) {
-		for (unsigned char j = 0; j < 8; j++) {
-			matrix2.m[i] = SetBit(matrix2.m[i], j, alternate);
-			if (alternate == 1) alternate = 0;
-			else if (alternate == 0) alternate = 1;
-		}
-		if (alternate == 1) alternate = 0;
-		else if (alternate == 0) alternate = 1;
-	}
-	
-	blankMatrix = clearSingleMatrix(blankMatrix);
-	
-	explosions = initExplosions(explosions);
-	explosions = pushExplosion(explosions, matrix, 350, 200);
-	explosions = pushExplosion(explosions, matrix2, 350, 200);
-	*/
-	
-	blankMatrix = clearSingleMatrix(blankMatrix);
-	
-	explosions = initExplosions(explosions);
-	
-	for (int i = 0; i < 8; i++) {
-		matrix.m[i] = eeprom_read_byte((uint8_t*)i);
-	}
+	matrix.m[1] = SetBit(matrix.m[1], 0, 0);
+	matrix.m[6] = SetBit(matrix.m[6], 0, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	
-	for (int i = 0; i < 8; i++) {
-		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 8);
-	}
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[1] = SetBit(matrix.m[1], 1, 0);
+	matrix.m[6] = SetBit(matrix.m[6], 1, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	for (int i = 0; i < 8; i++) {
-		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 16);
-	}
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[1] = SetBit(matrix.m[1], 2, 0);
+	matrix.m[6] = SetBit(matrix.m[6], 2, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	for (int i = 0; i < 8; i++) {
-		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 24);
-	}
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[1] = SetBit(matrix.m[1], 3, 0);
+	matrix.m[6] = SetBit(matrix.m[6], 3, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	for (int i = 0; i < 8; i++) {
-		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 32);
-	}
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[1] = SetBit(matrix.m[1], 4, 0);
+	matrix.m[6] = SetBit(matrix.m[6], 4, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	for (int i = 0; i < 8; i++) {
-		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 40);
-	}
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[1] = SetBit(matrix.m[1], 5, 0);
+	matrix.m[6] = SetBit(matrix.m[6], 5, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	for (int i = 0; i < 8; i++) {
-		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 48);
-	}
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[1] = SetBit(matrix.m[1], 6, 0);
+	matrix.m[6] = SetBit(matrix.m[6], 6, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	for (int i = 0; i < 8; i++) {
-		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 56);
-	}
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[1] = SetBit(matrix.m[1], 7, 0);
+	matrix.m[6] = SetBit(matrix.m[6], 7, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	for (int i = 0; i < 8; i++) {
-		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 64);
-	}
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[2] = SetBit(matrix.m[2], 7, 0);
+	matrix.m[5] = SetBit(matrix.m[5], 7, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	for (int i = 0; i < 8; i++) {
-		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 72);
-	}
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[2] = SetBit(matrix.m[2], 6, 0);
+	matrix.m[5] = SetBit(matrix.m[5], 6, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	for (int i = 0; i < 8; i++) {
-		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 80);
-	}
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[2] = SetBit(matrix.m[2], 5, 0);
+	matrix.m[5] = SetBit(matrix.m[5], 5, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	for (int i = 0; i < 8; i++) {
-		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 88);
-	}
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[2] = SetBit(matrix.m[2], 4, 0);
+	matrix.m[5] = SetBit(matrix.m[5], 4, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	for (int i = 0; i < 8; i++) {
-		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 96);
-	}
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[2] = SetBit(matrix.m[2], 3, 0);
+	matrix.m[5] = SetBit(matrix.m[5], 3, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	for (int i = 0; i < 8; i++) {
-		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 104);
-	}
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[2] = SetBit(matrix.m[2], 2, 0);
+	matrix.m[5] = SetBit(matrix.m[5], 2, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	for (int i = 0; i < 8; i++) {
-		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 112);
-	}
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[2] = SetBit(matrix.m[2], 1, 0);
+	matrix.m[5] = SetBit(matrix.m[5], 1, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	for (int i = 0; i < 8; i++) {
-		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 120);
-	}
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[2] = SetBit(matrix.m[2], 0, 0);
+	matrix.m[5] = SetBit(matrix.m[5], 0, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
-	for (int i = 0; i < 8; i++) {
-		matrix.m[i] = eeprom_read_byte((uint8_t*)i + 128);
-	}
+	matrix = clearSingleMatrix(matrix);
+	matrix.m[3] = 0x00;
+	matrix.m[4] = 0x00;
 	explosions = pushExplosion(explosions, matrix, 0, 2);
-	
 	
 	userMatrix = initSingleUserMatrix(userMatrix);
+	wallMatrix = clearSingleMatrix(wallMatrix);
+	wallMatrix.m[4] = 0xCC;
 	
 	while (1) {
 		explosions = ExpTick(explosions);
 		DeathTick();
 		d3_setMatrixColor(userMatrix.m, GREEN);
-	}
-}
-
-int KPTick(int state) {
-	static unsigned char pressedButton;
-	
-	switch (state) {
-		case KP_SMStart:
-		state = KP_Wait;
-		break;
+		d3_setMatrixColor(wallMatrix.m, BLUE);
 		
-		case KP_Wait:
-		pressedButton = GetKeypadKey();
-		if (pressedButton == '\0') {
-			state = KP_Wait;
-			} else if (pressedButton != '\0') {
-				if (pressedButton == '4') {
-					if (userMatrix.row < 7) {
-						userMatrix.row++;
-						userMatrix.m[userMatrix.row - 1] = SetBit(userMatrix.m[userMatrix.row - 1], userMatrix.column, 1);
-						userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
-					}
-				} else if (pressedButton == '2') {
-					if (userMatrix.column  < 7) {
-						userMatrix.column++;
-						userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column - 1, 1);
-						userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
-					}
-				} else if (pressedButton == '5') {
-					if (userMatrix.row > 0) {
-						userMatrix.row--;
-						userMatrix.m[userMatrix.row + 1] = SetBit(userMatrix.m[userMatrix.row + 1], userMatrix.column, 1);
-						userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
-					}
-				} else if (pressedButton == '8') {
-					if (userMatrix.column > 0) {
-						userMatrix.column--;
-						userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column + 1, 1);
-						userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
-					}
+		if (USART_HasReceived(0)) {
+			movement = USART_Receive(0);
+			
+			if (movement == 0x00) { // up
+				if (userMatrix.row < 7 && GetBit(wallMatrix.m[userMatrix.row + 1], userMatrix.column)) {
+					userMatrix.row++;
+					userMatrix.m[userMatrix.row - 1] = SetBit(userMatrix.m[userMatrix.row - 1], userMatrix.column, 1);
+					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
 				}
-			state = KP_Pressed;
+			} else if (movement == 0x01) { // right
+				if (userMatrix.column  < 7 && GetBit(wallMatrix.m[userMatrix.row], userMatrix.column + 1)) {
+					userMatrix.column++;
+					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column - 1, 1);
+					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
+				}
+			} else if (movement == 0x02) { // down
+				if (userMatrix.row > 0  && GetBit(wallMatrix.m[userMatrix.row - 1], userMatrix.column)) {
+					userMatrix.row--;
+					userMatrix.m[userMatrix.row + 1] = SetBit(userMatrix.m[userMatrix.row + 1], userMatrix.column, 1);
+					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
+				}
+			} else if (movement == 0x03) { // left
+				if (userMatrix.column > 0 &&  GetBit(wallMatrix.m[userMatrix.row], userMatrix.column - 1)) {
+					userMatrix.column--;
+					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column + 1, 1);
+					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
+				}
+			}
+			
 		}
-		break;
-		
-		case KP_Pressed:
-		if (GetKeypadKey() == '\0') {
-			state = KP_Wait;
-			} else if (GetKeypadKey() != '\0') {
-			state = KP_Pressed;
-		}
-		break;
-		
-		default:
-		break;
 	}
 	
-	switch (state) {
-		case KP_SMStart:
-		break;
-		
-		case KP_Wait:
-		break;
-		
-		default:
-		break;
-	}
-	
-	return state;
 }
 
 int ETIMERTick(int state) {

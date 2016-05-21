@@ -1,15 +1,18 @@
 #ifndef SRHELPERS_H
 #define SRHELPERS_H
 
+#define F_CPU 8000000UL
+
 #include "ledmatrix.h"
 #include "bit.h"
+#include <util/delay.h>
 
 #define PORT PORTB
 #define DATAPIN 0
 #define SHIFTPIN 1
 #define LATCHPIN 2
 
-#define COLUMNPORT PORTD
+#define COLUMNPORT PORTC
 
 void shiftSR(unsigned char i);
 void shiftWhole(unsigned char val);

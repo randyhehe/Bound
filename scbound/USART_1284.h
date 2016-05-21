@@ -7,8 +7,9 @@
 #ifndef USART_1284_H
 #define USART_1284_H
 
+#include "srhelpers.h"
+
 // USART Setup Values
-#define F_CPU 8000000UL // Assume uC operates at 8MHz
 #define BAUD_RATE 9600
 #define BAUD_PRESCALE (((F_CPU / (BAUD_RATE * 16UL))) - 1)
 

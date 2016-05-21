@@ -34,7 +34,7 @@ void TimerOff() {
 	TCCR1B = 0x00; // bit3bit1bit0=000: timer off
 }
 void TimerISR() {
-	for (unsigned char i = 0; i < 2; i++) {
+	for (unsigned char i = 0; i < 1; i++) {
 		if (tasks[i].elapsedTime >= tasks[i].period) {
 			tasks[i].state = tasks[i].TickFct(tasks[i].state);
 			tasks[i].elapsedTime = 0;
