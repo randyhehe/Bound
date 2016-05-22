@@ -12,7 +12,6 @@ unsigned long contClock = 0;
 unsigned char displayBlank = 0;
 unsigned char numPatterns = 0;
 
-unsigned char numLevels[2];
 unsigned char curLevel = 0;
 
 Explosions ExpTick(Explosions explosions);
@@ -34,7 +33,7 @@ void LED_Tick();
 enum Edit_States {Edit_SMStart, Edit_Wait, Edit_Display} Edit_State;
 void Edit_Tick();
 
-void fetchLevels();
+void setLevel();
 
 
 int main(void) {
@@ -43,8 +42,6 @@ int main(void) {
 	DDRC = 0xFF; PORTC = 0x00;
 	
 	initUSART(0);
-	
-	fetchLevels();
 	
 	initTasks();
 	
@@ -338,49 +335,15 @@ int main(void) {
 				displayEDIT = 0;
 			} else if (USARTReceiver == 0x08) { // Edit right
 				
-				
-				numPatterns = eeprom_read_byte((uint8_t*)251);
-				
-				for (unsigned char i = 0; i < 8; i++) {
-					wallMatrix.m[i] = eeprom_read_byte((uint8_t*)(i+252));
+				if (eeprom_read_byte((uint8_t*)(curLevel * 250 + 251)) != 0) {
+					curLevel++;
+					setLevel();
 				}
-				
-				explosions = initExplosions(explosions);
-				
-				unsigned short tempCnt = 261;
-				unsigned char timeBetween;
-				unsigned char timeDuration;
-				for (unsigned char i = 0; i < numPatterns; i++) {
-					for (unsigned char j = 0; j < 8; j++) {
-						matrix.m[j] = eeprom_read_byte((uint8_t*)(j + tempCnt));
-					}
-					timeBetween = eeprom_read_byte((uint8_t*)(tempCnt + 8));
-					timeDuration = eeprom_read_byte((uint8_t*)(tempCnt + 9));
-					explosions = pushExplosion(explosions, matrix, timeBetween, timeDuration);
-					
-					tempCnt += 10;
-				}
+
 			} else if (USARTReceiver == 0x09) { // Edit left
-				numPatterns = eeprom_read_byte((uint8_t*)1);
-				
-				for (unsigned char i = 0; i < 8; i++) {
-					wallMatrix.m[i] = eeprom_read_byte((uint8_t*)(i+2));
-				}
-				
-				explosions = initExplosions(explosions);
-				
-				unsigned short tempCnt = 11;
-				unsigned char timeBetween;
-				unsigned char timeDuration;
-				for (unsigned char i = 0; i < numPatterns; i++) {
-					for (unsigned char j = 0; j < 8; j++) {
-						matrix.m[j] = eeprom_read_byte((uint8_t*)(j + tempCnt));
-					}
-					timeBetween = eeprom_read_byte((uint8_t*)(tempCnt + 8));
-					timeDuration = eeprom_read_byte((uint8_t*)(tempCnt + 9));
-					explosions = pushExplosion(explosions, matrix, timeBetween, timeDuration);
-					
-					tempCnt += 10;
+				if (curLevel > 0) {
+					curLevel--;
+					setLevel();
 				}
 			}
 			
@@ -554,24 +517,28 @@ Explosions ExpTick(Explosions explosions) {
 	return explosions;
 }
 
-void fetchLevels() {
-	unsigned short current = 1;
-	unsigned char currentVal;
-	for (unsigned char i = 0; i < 16; i++) {
-		currentVal = eeprom_read_byte((uint8_t*)1);
-		if (currentVal !=  0) {
-			if (i < 8) {
-				numLevels[0] = SetBit(numLevels[0], i, 1);
-			} else if (i >= 8) {
-				numLevels[1] = SetBit(numLevels[1], i-8, 1);
-			}
-		} else if (currentVal == 0) {
-			if (i < 8) {
-				numLevels[0] = SetBit(numLevels[0], i, 0);
-				} else if (i >= 8) {
-				numLevels[1] = SetBit(numLevels[1], i-8, 0);
-			}
+void setLevel() {
+	unsigned short startingIndex = curLevel*250;
+	
+	numPatterns = eeprom_read_byte((uint8_t*)(startingIndex + 1));
+	
+	for (unsigned char i = 0; i < 8; i++) {
+		wallMatrix.m[i] = eeprom_read_byte((uint8_t*)(startingIndex + 2 + i));
+	}
+	
+	explosions = initExplosions(explosions);
+	
+	unsigned short tempCnt = startingIndex + 11;
+	unsigned char timeBetween;
+	unsigned char timeDuration;
+	for (unsigned char i = 0; i < numPatterns; i++) {
+		for (unsigned char j = 0; j < 8; j++) {
+			matrix.m[j] = eeprom_read_byte((uint8_t*)(j+ tempCnt));
 		}
-		current += 250;
+		timeBetween = eeprom_read_byte((uint8_t*)(tempCnt + 8));
+		timeDuration = eeprom_read_byte((uint8_t*)(tempCnt + 9));
+		explosions = pushExplosion(explosions, matrix, timeBetween, timeDuration);
+		
+		tempCnt +=10;
 	}
 }
