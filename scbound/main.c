@@ -10,8 +10,8 @@
 
 unsigned long contClock = 0;
 unsigned char displayBlank = 0;
-unsigned char numPatterns = 0;
 
+unsigned char numLevels = 0;
 unsigned char curLevel = 0;
 
 Explosions ExpTick(Explosions explosions);
@@ -34,6 +34,7 @@ enum Edit_States {Edit_SMStart, Edit_Wait, Edit_Display} Edit_State;
 void Edit_Tick();
 
 void setLevel();
+void initNumLevel();
 
 
 int main(void) {
@@ -43,6 +44,7 @@ int main(void) {
 	
 	initUSART(0);
 	
+	initNumLevel();
 	initTasks();
 	
 	TimerSet(1);
@@ -54,25 +56,7 @@ int main(void) {
 	explosions = initExplosions(explosions);
 	wallMatrix = clearSingleMatrix(wallMatrix);
 	
-	numPatterns = eeprom_read_byte((uint8_t*)1);
-	
-	for (unsigned char i = 0; i < 8; i++) {
-		wallMatrix.m[i] = eeprom_read_byte((uint8_t*)(i+2));
-	}
-	
-	unsigned char tempCnt = 11;
-	unsigned char timeBetween = 0;
-	unsigned char timeDuration = 0;
-	for (unsigned char i = 0; i < numPatterns; i++) {
-		for (unsigned char j = 0; j < 8; j++) {
-			matrix.m[j] = eeprom_read_byte((uint8_t*)(j + tempCnt));	
-		}
-		timeBetween = eeprom_read_byte((uint8_t*)(tempCnt + 8));
-		timeDuration = eeprom_read_byte((uint8_t*)(tempCnt + 9));
-		explosions = pushExplosion(explosions, matrix, timeBetween, timeDuration);
-		
-		tempCnt += 10;
-	}
+	setLevel();
 	
 	/*
 	unsigned short tempCnter = 501;
@@ -331,6 +315,13 @@ int main(void) {
 				displayLED = 0;
 			} else if (USARTReceiver == 0x06) { // Edit start
 				displayEDIT = 1;
+				if (USART_IsSendReady(0)) {
+					USART_Send(curLevel, 0);
+				}
+				if (USART_IsSendReady(0)) {
+					unsigned char numPatterns = eeprom_read_byte((uint8_t*)(curLevel*250 + 1)) | 0x80;
+					USART_Send(numPatterns, 0);
+				}
 			} else if (USARTReceiver == 0x07) { // Edit end
 				displayEDIT = 0;
 			} else if (USARTReceiver == 0x08) { // Edit right
@@ -338,12 +329,28 @@ int main(void) {
 				if (eeprom_read_byte((uint8_t*)(curLevel * 250 + 251)) != 0) {
 					curLevel++;
 					setLevel();
+					
+					if (USART_IsSendReady(0)) {
+						USART_Send(curLevel, 0);
+					}
+					if (USART_IsSendReady(0)) {
+						unsigned char numPatterns = eeprom_read_byte((uint8_t*)(curLevel*250 + 1)) | 0x80;
+						USART_Send(numPatterns, 0);
+					}
 				}
-
 			} else if (USARTReceiver == 0x09) { // Edit left
 				if (curLevel > 0) {
 					curLevel--;
 					setLevel();
+					
+					if (USART_IsSendReady(0)) {
+						USART_Send(curLevel, 0);
+					}
+					
+					if (USART_IsSendReady(0)) {
+						unsigned char numPatterns = eeprom_read_byte((uint8_t*)(curLevel*250 + 1)) | 0x80;
+						USART_Send(numPatterns, 0);
+					}
 				}
 			}
 			
@@ -432,6 +439,7 @@ void Edit_Tick() {
 		case Edit_Display:
 			explosions = ExpTick(explosions);
 			d3_setMatrixColor(wallMatrix.m, BLUE);
+			
 			break;
 			
 		default:
@@ -517,10 +525,18 @@ Explosions ExpTick(Explosions explosions) {
 	return explosions;
 }
 
+void initNumLevel() {
+	unsigned short startingIndex = 1;
+	
+	while(eeprom_read_byte((uint8_t*)startingIndex) != 0) {
+		numLevels++;
+		startingIndex += 250;
+	}
+}
+
 void setLevel() {
 	unsigned short startingIndex = curLevel*250;
-	
-	numPatterns = eeprom_read_byte((uint8_t*)(startingIndex + 1));
+	unsigned char numPatterns = eeprom_read_byte((uint8_t*)(startingIndex + 1));
 	
 	for (unsigned char i = 0; i < 8; i++) {
 		wallMatrix.m[i] = eeprom_read_byte((uint8_t*)(startingIndex + 2 + i));
