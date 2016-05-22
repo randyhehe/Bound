@@ -22,7 +22,11 @@ SingleMatrix matrix2;
 SingleMatrix blankMatrix;
 SingleMatrix wallMatrix;
 
-unsigned char movement;
+unsigned char USARTReceiver;
+unsigned char displayLCD;
+
+enum LCD_States {LCD_SMStart, LCD_Wait, LCD_Display} LCD_State;
+void LCD_Tick();
 
 
 int main(void) {
@@ -36,6 +40,8 @@ int main(void) {
 	
 	TimerSet(1);
 	TimerOn();
+	
+	LCD_State = LCD_SMStart;
 	
 	blankMatrix = clearSingleMatrix(blankMatrix);
 	
@@ -131,38 +137,39 @@ int main(void) {
 	wallMatrix.m[4] = 0xCC;
 	
 	while (1) {
-		explosions = ExpTick(explosions);
-		DeathTick();
-		d3_setMatrixColor(userMatrix.m, GREEN);
-		d3_setMatrixColor(wallMatrix.m, BLUE);
+		LCD_Tick();
 		
 		if (USART_HasReceived(0)) {
-			movement = USART_Receive(0);
+			USARTReceiver = USART_Receive(0);
 			
-			if (movement == 0x00) { // up
+			if (USARTReceiver == 0x00) { // up
 				if (userMatrix.row < 7 && GetBit(wallMatrix.m[userMatrix.row + 1], userMatrix.column)) {
 					userMatrix.row++;
 					userMatrix.m[userMatrix.row - 1] = SetBit(userMatrix.m[userMatrix.row - 1], userMatrix.column, 1);
 					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
 				}
-			} else if (movement == 0x01) { // right
+			} else if (USARTReceiver == 0x01) { // right
 				if (userMatrix.column  < 7 && GetBit(wallMatrix.m[userMatrix.row], userMatrix.column + 1)) {
 					userMatrix.column++;
 					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column - 1, 1);
 					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
 				}
-			} else if (movement == 0x02) { // down
+			} else if (USARTReceiver == 0x02) { // down
 				if (userMatrix.row > 0  && GetBit(wallMatrix.m[userMatrix.row - 1], userMatrix.column)) {
 					userMatrix.row--;
 					userMatrix.m[userMatrix.row + 1] = SetBit(userMatrix.m[userMatrix.row + 1], userMatrix.column, 1);
 					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
 				}
-			} else if (movement == 0x03) { // left
+			} else if (USARTReceiver == 0x03) { // left
 				if (userMatrix.column > 0 &&  GetBit(wallMatrix.m[userMatrix.row], userMatrix.column - 1)) {
 					userMatrix.column--;
 					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column + 1, 1);
 					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
 				}
+			} else if (USARTReceiver == 0x04) { // Game start
+				displayLCD = 1;
+			} else if (USARTReceiver == 0x05) {
+				displayLCD = 0;
 			}
 			
 		}
@@ -201,11 +208,64 @@ int ETIMERTick(int state) {
 unsigned char DeathTick() {	
 	if ((displayBlank == 0) && GetBit(explosions.matricies[explosions.displayIndex].m[userMatrix.row], userMatrix.column) == 0) {
 		userMatrix = initSingleUserMatrix(userMatrix);
+		if (USART_IsSendReady(0)) {
+			USART_Send(0x00, 0);
+		}
 		return 1;
 	} else {
 		// nothing
 		return 0;
 	}
+}
+
+void LCD_Tick() {
+	switch (LCD_State) {
+		case LCD_SMStart:
+			LCD_State = LCD_Wait;
+			displayLCD = 0;
+			break;
+		
+		case LCD_Wait:
+			if (displayLCD) {
+				LCD_State = LCD_Display;
+				userMatrix = initSingleUserMatrix(userMatrix);
+			} else if (!displayLCD) {
+				LCD_State = LCD_Wait;
+			}
+			break;
+		
+		case LCD_Display:
+			if (displayLCD) {
+				LCD_State = LCD_Display;
+				} else if (!displayLCD) {
+				LCD_State = LCD_Wait; 
+				d3_setMatrixColor(blankMatrix.m, RED);
+				d3_setMatrixColor(blankMatrix.m, GREEN);
+				d3_setMatrixColor(blankMatrix.m, BLUE);
+			}
+			break;
+		
+		default:
+			break;
+	}
+	
+	switch (LCD_State) {
+		case LCD_SMStart:
+			break;
+		
+		case LCD_Wait:
+			break;
+		
+		case LCD_Display:
+			explosions = ExpTick(explosions);
+			DeathTick();
+			d3_setMatrixColor(userMatrix.m, GREEN);
+			d3_setMatrixColor(wallMatrix.m, BLUE);
+			break;
+		
+		default:
+			break;
+	}	
 }
 
 Explosions ExpTick(Explosions explosions) {	

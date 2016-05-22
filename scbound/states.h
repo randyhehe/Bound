@@ -8,7 +8,7 @@ typedef struct task {
 	int (*TickFct)(int);
 } task;
 
-task tasks[2];
+task tasks[1];
 
 const unsigned long tasksPeriodGCD = 1;
 

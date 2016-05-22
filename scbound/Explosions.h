@@ -1,7 +1,7 @@
 #ifndef EXPLOSIONS_H_
 #define EXPLOSIONS_H_
 
-#define NUMEXP 20
+#define NUMEXP 18
 
 #include "ledmatrix.h"
 
