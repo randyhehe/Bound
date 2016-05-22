@@ -23,10 +23,14 @@ SingleMatrix blankMatrix;
 SingleMatrix wallMatrix;
 
 unsigned char USARTReceiver;
-unsigned char displayLCD;
+unsigned char displayLED;
+unsigned char displayEDIT;
 
-enum LCD_States {LCD_SMStart, LCD_Wait, LCD_Display} LCD_State;
-void LCD_Tick();
+enum LED_States {LED_SMStart, LED_Wait, LED_Display} LED_State;
+void LED_Tick();
+
+enum Edit_States {Edit_SMStart, Edit_Wait, Edit_Display} Edit_State;
+void Edit_Tick();
 
 
 int main(void) {
@@ -41,7 +45,7 @@ int main(void) {
 	TimerSet(1);
 	TimerOn();
 	
-	LCD_State = LCD_SMStart;
+	LED_State = LED_SMStart;
 	
 	blankMatrix = clearSingleMatrix(blankMatrix);
 	
@@ -137,7 +141,8 @@ int main(void) {
 	wallMatrix.m[4] = 0xCC;
 	
 	while (1) {
-		LCD_Tick();
+		LED_Tick();
+		Edit_Tick();
 		
 		if (USART_HasReceived(0)) {
 			USARTReceiver = USART_Receive(0);
@@ -167,9 +172,13 @@ int main(void) {
 					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
 				}
 			} else if (USARTReceiver == 0x04) { // Game start
-				displayLCD = 1;
-			} else if (USARTReceiver == 0x05) {
-				displayLCD = 0;
+				displayLED = 1;
+			} else if (USARTReceiver == 0x05) { // Game end
+				displayLED = 0;
+			} else if (USARTReceiver == 0x06) { // Edit start
+				displayEDIT = 1;
+			} else if (USARTReceiver == 0x07) { // Edit end
+				displayEDIT = 0;
 			}
 			
 		}
@@ -218,27 +227,74 @@ unsigned char DeathTick() {
 	}
 }
 
-void LCD_Tick() {
-	switch (LCD_State) {
-		case LCD_SMStart:
-			LCD_State = LCD_Wait;
-			displayLCD = 0;
+void Edit_Tick() {
+	switch (Edit_State) {
+		case Edit_SMStart:
+			Edit_State = Edit_Wait;
+			break;
+			
+		case Edit_Wait:
+			if (!displayEDIT) {
+				Edit_State = Edit_Wait;
+			} else if (displayEDIT) {
+				Edit_State = Edit_Display;
+				userMatrix = initSingleUserMatrix(userMatrix);
+			} 
+			d3_setMatrixColor(blankMatrix.m, RED);
+			d3_setMatrixColor(blankMatrix.m, GREEN);
+			d3_setMatrixColor(blankMatrix.m, BLUE);
+			break;
+			
+		case Edit_Display:
+			if (!displayEDIT) {
+				Edit_State = Edit_Wait;
+			} else if (displayEDIT) {
+				Edit_State = Edit_Display;
+			}
+			break;
+			
+		default:
+			break;
+	}
+	
+	switch (Edit_State) {
+		case Edit_SMStart:
 			break;
 		
-		case LCD_Wait:
-			if (displayLCD) {
-				LCD_State = LCD_Display;
+		case Edit_Wait:
+			break;
+		
+		case Edit_Display:
+			d3_setMatrixColor(userMatrix.m, GREEN);
+			break;
+			
+		default:
+			break;
+	}
+}
+
+void LED_Tick() {
+	switch (LED_State) {
+		case LED_SMStart:
+			LED_State = LED_Wait;
+			displayLED = 0;
+			break;
+		
+		case LED_Wait:
+			if (displayLED) {
+				LED_State = LED_Display;
 				userMatrix = initSingleUserMatrix(userMatrix);
-			} else if (!displayLCD) {
-				LCD_State = LCD_Wait;
+				explosions.displayIndex = 0;
+			} else if (!displayLED) {
+				LED_State = LED_Wait;
 			}
 			break;
 		
-		case LCD_Display:
-			if (displayLCD) {
-				LCD_State = LCD_Display;
-				} else if (!displayLCD) {
-				LCD_State = LCD_Wait; 
+		case LED_Display:
+			if (displayLED) {
+				LED_State = LED_Display;
+				} else if (!displayLED) {
+				LED_State = LED_Wait; 
 				d3_setMatrixColor(blankMatrix.m, RED);
 				d3_setMatrixColor(blankMatrix.m, GREEN);
 				d3_setMatrixColor(blankMatrix.m, BLUE);
@@ -249,14 +305,14 @@ void LCD_Tick() {
 			break;
 	}
 	
-	switch (LCD_State) {
-		case LCD_SMStart:
+	switch (LED_State) {
+		case LED_SMStart:
 			break;
 		
-		case LCD_Wait:
+		case LED_Wait:
 			break;
 		
-		case LCD_Display:
+		case LED_Display:
 			explosions = ExpTick(explosions);
 			DeathTick();
 			d3_setMatrixColor(userMatrix.m, GREEN);

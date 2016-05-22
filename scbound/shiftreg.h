@@ -5,7 +5,7 @@
 #define BLUE 1
 #define GREEN 2
 
-#define DELAYTIME 0.6
+#define DELAYTIME 0.2
 
 #include <avr/io.h>
 #include "srhelpers.h"
