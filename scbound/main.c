@@ -6,11 +6,14 @@
 #include "shiftreg.h"
 #include "states.h"
 #include "Explosions.h"
-//#include <avr/delay.h>
 #include "USART_1284.h"
 
 unsigned long contClock = 0;
 unsigned char displayBlank = 0;
+unsigned char numPatterns = 0;
+
+unsigned char numLevels[2];
+unsigned char curLevel = 0;
 
 Explosions ExpTick(Explosions explosions);
 unsigned char DeathTick();
@@ -18,7 +21,6 @@ unsigned char DeathTick();
 Explosions explosions;
 SingleMatrixUser userMatrix;
 SingleMatrix matrix;
-SingleMatrix matrix2;
 SingleMatrix blankMatrix;
 SingleMatrix wallMatrix;
 
@@ -32,6 +34,8 @@ void LED_Tick();
 enum Edit_States {Edit_SMStart, Edit_Wait, Edit_Display} Edit_State;
 void Edit_Tick();
 
+void fetchLevels();
+
 
 int main(void) {
 	DDRB = 0xFF; PORTB = 0x00;
@@ -39,6 +43,8 @@ int main(void) {
 	DDRC = 0xFF; PORTC = 0x00;
 	
 	initUSART(0);
+	
+	fetchLevels();
 	
 	initTasks();
 	
@@ -48,58 +54,210 @@ int main(void) {
 	LED_State = LED_SMStart;
 	
 	blankMatrix = clearSingleMatrix(blankMatrix);
-	
 	explosions = initExplosions(explosions);
+	wallMatrix = clearSingleMatrix(wallMatrix);
+	
+	numPatterns = eeprom_read_byte((uint8_t*)1);
+	
+	for (unsigned char i = 0; i < 8; i++) {
+		wallMatrix.m[i] = eeprom_read_byte((uint8_t*)(i+2));
+	}
+	
+	unsigned char tempCnt = 11;
+	unsigned char timeBetween = 0;
+	unsigned char timeDuration = 0;
+	for (unsigned char i = 0; i < numPatterns; i++) {
+		for (unsigned char j = 0; j < 8; j++) {
+			matrix.m[j] = eeprom_read_byte((uint8_t*)(j + tempCnt));	
+		}
+		timeBetween = eeprom_read_byte((uint8_t*)(tempCnt + 8));
+		timeDuration = eeprom_read_byte((uint8_t*)(tempCnt + 9));
+		explosions = pushExplosion(explosions, matrix, timeBetween, timeDuration);
+		
+		tempCnt += 10;
+	}
+	
+	/*
+	unsigned short tempCnter = 501;
+	for (unsigned char i = 2; i < 16; i++) {
+		eeprom_update_byte((uint8_t*)tempCnter, 0);
+		tempCnter += 250;
+	}
+	*/
+	
+	/*
+	wallMatrix = clearSingleMatrix(wallMatrix);
+	
+	eeprom_update_byte((uint8_t*)251, 2);
+	for (unsigned char i = 0; i < 8; i++) {
+		eeprom_update_byte((uint8_t*)(i+252), wallMatrix.m[i]);
+	}
+	
+	matrix = clearSingleMatrix(matrix);
+	unsigned char alternate = 0;
+	for (unsigned char i = 1; i < 7; i++) {
+		for (unsigned char j = 0; j < 8; j++) {
+			matrix.m[i] = SetBit(matrix.m[i], j, alternate);
+			if (alternate == 1) alternate = 0;
+			else if (alternate == 0) alternate = 1;
+		}
+		if (alternate == 1) alternate = 0;
+		else if (alternate == 0) alternate = 1;
+	}
+	
+	// Assign 261-270
+	for (unsigned char i = 0; i < 8; i++) {
+		eeprom_update_byte((uint8_t*)(i+261), matrix.m[i]);
+	} eeprom_update_byte((uint8_t*)(269), 35);
+	eeprom_update_byte((uint8_t*)(270), 20);
+	
+	matrix = clearSingleMatrix(matrix);
+	alternate = 1;
+	for (unsigned char i = 1; i < 7; i++) {
+		for (unsigned char j = 0; j < 8; j++) {
+			matrix.m[i] = SetBit(matrix.m[i], j, alternate);
+			if (alternate == 1) alternate = 0;
+			else if (alternate == 0) alternate = 1;
+		}
+		if (alternate == 1) alternate = 0;
+		else if (alternate == 0) alternate = 1;
+	}
+	
+	// Assign 271-280
+	for (unsigned char i = 0; i < 8; i++) {
+		eeprom_update_byte((uint8_t*)(i+271), matrix.m[i]);
+	} eeprom_update_byte((uint8_t*)(279), 35);
+	eeprom_update_byte((uint8_t*)(280), 20);
+	*/
+	
+	
+	
+	
+	
+	
+	
+	//wallMatrix.m[4] = 0xCC;
+	/*
+	/ Assign 1 as number of patterns
+	eeprom_update_byte((uint8_t*)1, 10);
+	
+	// Assign 2-9 as wall
+	for (unsigned char i = 0; i < 8; i++) {
+		eeprom_update_byte((uint8_t*)(i+2), wallMatrix.m[i]);
+	}
 	
 	matrix = clearSingleMatrix(matrix);
 	matrix.m[1] = SetBit(matrix.m[1], 0, 0);
 	matrix.m[6] = SetBit(matrix.m[6], 0, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
+	// Assign 11-20
+	for (unsigned char i = 0; i < 8; i++) {
+		eeprom_update_byte((uint8_t*)(i+11), matrix.m[i]);
+	} eeprom_update_byte((uint8_t*)(19), 0);
+	  eeprom_update_byte((uint8_t*)(20), 2);
+	
 	matrix = clearSingleMatrix(matrix);
 	matrix.m[1] = SetBit(matrix.m[1], 1, 0);
 	matrix.m[6] = SetBit(matrix.m[6], 1, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
+	
+	// Assign 21-30
+	for (unsigned char i = 0; i < 8; i++) {
+		eeprom_update_byte((uint8_t*)(i+21), matrix.m[i]);
+	} eeprom_update_byte((uint8_t*)(29), 0);
+	eeprom_update_byte((uint8_t*)(30), 2);
 	
 	matrix = clearSingleMatrix(matrix);
 	matrix.m[1] = SetBit(matrix.m[1], 2, 0);
 	matrix.m[6] = SetBit(matrix.m[6], 2, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
+	// Assign 31-40
+	for (unsigned char i = 0; i < 8; i++) {
+		eeprom_update_byte((uint8_t*)(i+31), matrix.m[i]);
+	} eeprom_update_byte((uint8_t*)(39), 0);
+	eeprom_update_byte((uint8_t*)(40), 2);
+	
 	matrix = clearSingleMatrix(matrix);
 	matrix.m[1] = SetBit(matrix.m[1], 3, 0);
 	matrix.m[6] = SetBit(matrix.m[6], 3, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
+	
+	// Assign 41-50
+	for (unsigned char i = 0; i < 8; i++) {
+		eeprom_update_byte((uint8_t*)(i+41), matrix.m[i]);
+	} eeprom_update_byte((uint8_t*)(49), 0);
+	eeprom_update_byte((uint8_t*)(50), 2);
 	
 	matrix = clearSingleMatrix(matrix);
 	matrix.m[1] = SetBit(matrix.m[1], 4, 0);
 	matrix.m[6] = SetBit(matrix.m[6], 4, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
+	// Assign 51-60
+	for (unsigned char i = 0; i < 8; i++) {
+		eeprom_update_byte((uint8_t*)(i+51), matrix.m[i]);
+	} eeprom_update_byte((uint8_t*)(59), 0);
+	eeprom_update_byte((uint8_t*)(60), 2);
+	
 	matrix = clearSingleMatrix(matrix);
 	matrix.m[1] = SetBit(matrix.m[1], 5, 0);
 	matrix.m[6] = SetBit(matrix.m[6], 5, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
+	
+	// Assign 61-70
+	for (unsigned char i = 0; i < 8; i++) {
+		eeprom_update_byte((uint8_t*)(i+61), matrix.m[i]);
+	} eeprom_update_byte((uint8_t*)(69), 0);
+	eeprom_update_byte((uint8_t*)(70), 2);
 	
 	matrix = clearSingleMatrix(matrix);
 	matrix.m[1] = SetBit(matrix.m[1], 6, 0);
 	matrix.m[6] = SetBit(matrix.m[6], 6, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
+	// Assign 71-80
+	for (unsigned char i = 0; i < 8; i++) {
+		eeprom_update_byte((uint8_t*)(i+71), matrix.m[i]);
+	} eeprom_update_byte((uint8_t*)(79), 0);
+	eeprom_update_byte((uint8_t*)(80), 2);
+	
 	matrix = clearSingleMatrix(matrix);
 	matrix.m[1] = SetBit(matrix.m[1], 7, 0);
 	matrix.m[6] = SetBit(matrix.m[6], 7, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
+	
+	// Assign 81-90
+	for (unsigned char i = 0; i < 8; i++) {
+		eeprom_update_byte((uint8_t*)(i+81), matrix.m[i]);
+	} eeprom_update_byte((uint8_t*)(89), 0);
+	eeprom_update_byte((uint8_t*)(90), 2);
 	
 	matrix = clearSingleMatrix(matrix);
 	matrix.m[2] = SetBit(matrix.m[2], 7, 0);
 	matrix.m[5] = SetBit(matrix.m[5], 7, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
 	
+	// Assign 91-100
+	for (unsigned char i = 0; i < 8; i++) {
+		eeprom_update_byte((uint8_t*)(i+91), matrix.m[i]);
+	} eeprom_update_byte((uint8_t*)(99), 0);
+	eeprom_update_byte((uint8_t*)(100), 2);
+	
+	
 	matrix = clearSingleMatrix(matrix);
 	matrix.m[2] = SetBit(matrix.m[2], 6, 0);
 	matrix.m[5] = SetBit(matrix.m[5], 6, 0);
 	explosions = pushExplosion(explosions, matrix, 0, 2);
+	
+	// Assign 101-110
+	for (unsigned char i = 0; i < 8; i++) {
+		eeprom_update_byte((uint8_t*)(i+101), matrix.m[i]);
+	} eeprom_update_byte((uint8_t*)(109), 0);
+	eeprom_update_byte((uint8_t*)(110), 2);
+	*/
+	/*
 	
 	matrix = clearSingleMatrix(matrix);
 	matrix.m[2] = SetBit(matrix.m[2], 5, 0);
@@ -135,10 +293,9 @@ int main(void) {
 	matrix.m[3] = 0x00;
 	matrix.m[4] = 0x00;
 	explosions = pushExplosion(explosions, matrix, 0, 2);
+	*/
 	
 	userMatrix = initSingleUserMatrix(userMatrix);
-	wallMatrix = clearSingleMatrix(wallMatrix);
-	wallMatrix.m[4] = 0xCC;
 	
 	while (1) {
 		LED_Tick();
@@ -147,25 +304,25 @@ int main(void) {
 		if (USART_HasReceived(0)) {
 			USARTReceiver = USART_Receive(0);
 			
-			if (USARTReceiver == 0x00) { // up
+			if (USARTReceiver == 0x00) { // game up
 				if (userMatrix.row < 7 && GetBit(wallMatrix.m[userMatrix.row + 1], userMatrix.column)) {
 					userMatrix.row++;
 					userMatrix.m[userMatrix.row - 1] = SetBit(userMatrix.m[userMatrix.row - 1], userMatrix.column, 1);
 					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
 				}
-			} else if (USARTReceiver == 0x01) { // right
+			} else if (USARTReceiver == 0x01) { // game right
 				if (userMatrix.column  < 7 && GetBit(wallMatrix.m[userMatrix.row], userMatrix.column + 1)) {
 					userMatrix.column++;
 					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column - 1, 1);
 					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
 				}
-			} else if (USARTReceiver == 0x02) { // down
+			} else if (USARTReceiver == 0x02) { // game down
 				if (userMatrix.row > 0  && GetBit(wallMatrix.m[userMatrix.row - 1], userMatrix.column)) {
 					userMatrix.row--;
 					userMatrix.m[userMatrix.row + 1] = SetBit(userMatrix.m[userMatrix.row + 1], userMatrix.column, 1);
 					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
 				}
-			} else if (USARTReceiver == 0x03) { // left
+			} else if (USARTReceiver == 0x03) { // game left
 				if (userMatrix.column > 0 &&  GetBit(wallMatrix.m[userMatrix.row], userMatrix.column - 1)) {
 					userMatrix.column--;
 					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column + 1, 1);
@@ -179,6 +336,52 @@ int main(void) {
 				displayEDIT = 1;
 			} else if (USARTReceiver == 0x07) { // Edit end
 				displayEDIT = 0;
+			} else if (USARTReceiver == 0x08) { // Edit right
+				
+				
+				numPatterns = eeprom_read_byte((uint8_t*)251);
+				
+				for (unsigned char i = 0; i < 8; i++) {
+					wallMatrix.m[i] = eeprom_read_byte((uint8_t*)(i+252));
+				}
+				
+				explosions = initExplosions(explosions);
+				
+				unsigned short tempCnt = 261;
+				unsigned char timeBetween;
+				unsigned char timeDuration;
+				for (unsigned char i = 0; i < numPatterns; i++) {
+					for (unsigned char j = 0; j < 8; j++) {
+						matrix.m[j] = eeprom_read_byte((uint8_t*)(j + tempCnt));
+					}
+					timeBetween = eeprom_read_byte((uint8_t*)(tempCnt + 8));
+					timeDuration = eeprom_read_byte((uint8_t*)(tempCnt + 9));
+					explosions = pushExplosion(explosions, matrix, timeBetween, timeDuration);
+					
+					tempCnt += 10;
+				}
+			} else if (USARTReceiver == 0x09) { // Edit left
+				numPatterns = eeprom_read_byte((uint8_t*)1);
+				
+				for (unsigned char i = 0; i < 8; i++) {
+					wallMatrix.m[i] = eeprom_read_byte((uint8_t*)(i+2));
+				}
+				
+				explosions = initExplosions(explosions);
+				
+				unsigned short tempCnt = 11;
+				unsigned char timeBetween;
+				unsigned char timeDuration;
+				for (unsigned char i = 0; i < numPatterns; i++) {
+					for (unsigned char j = 0; j < 8; j++) {
+						matrix.m[j] = eeprom_read_byte((uint8_t*)(j + tempCnt));
+					}
+					timeBetween = eeprom_read_byte((uint8_t*)(tempCnt + 8));
+					timeDuration = eeprom_read_byte((uint8_t*)(tempCnt + 9));
+					explosions = pushExplosion(explosions, matrix, timeBetween, timeDuration);
+					
+					tempCnt += 10;
+				}
 			}
 			
 		}
@@ -238,16 +441,15 @@ void Edit_Tick() {
 				Edit_State = Edit_Wait;
 			} else if (displayEDIT) {
 				Edit_State = Edit_Display;
-				userMatrix = initSingleUserMatrix(userMatrix);
 			} 
-			d3_setMatrixColor(blankMatrix.m, RED);
-			d3_setMatrixColor(blankMatrix.m, GREEN);
-			d3_setMatrixColor(blankMatrix.m, BLUE);
 			break;
 			
 		case Edit_Display:
 			if (!displayEDIT) {
 				Edit_State = Edit_Wait;
+				d3_setMatrixColor(blankMatrix.m, RED);
+				d3_setMatrixColor(blankMatrix.m, GREEN);
+				d3_setMatrixColor(blankMatrix.m, BLUE);
 			} else if (displayEDIT) {
 				Edit_State = Edit_Display;
 			}
@@ -265,7 +467,8 @@ void Edit_Tick() {
 			break;
 		
 		case Edit_Display:
-			d3_setMatrixColor(userMatrix.m, GREEN);
+			explosions = ExpTick(explosions);
+			d3_setMatrixColor(wallMatrix.m, BLUE);
 			break;
 			
 		default:
@@ -349,4 +552,26 @@ Explosions ExpTick(Explosions explosions) {
 	}
 	
 	return explosions;
+}
+
+void fetchLevels() {
+	unsigned short current = 1;
+	unsigned char currentVal;
+	for (unsigned char i = 0; i < 16; i++) {
+		currentVal = eeprom_read_byte((uint8_t*)1);
+		if (currentVal !=  0) {
+			if (i < 8) {
+				numLevels[0] = SetBit(numLevels[0], i, 1);
+			} else if (i >= 8) {
+				numLevels[1] = SetBit(numLevels[1], i-8, 1);
+			}
+		} else if (currentVal == 0) {
+			if (i < 8) {
+				numLevels[0] = SetBit(numLevels[0], i, 0);
+				} else if (i >= 8) {
+				numLevels[1] = SetBit(numLevels[1], i-8, 0);
+			}
+		}
+		current += 250;
+	}
 }
