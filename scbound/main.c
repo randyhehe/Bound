@@ -351,6 +351,10 @@ int main(void) {
 						unsigned char numPatterns = eeprom_read_byte((uint8_t*)(curLevel*250 + 1)) | 0x80;
 						USART_Send(numPatterns, 0);
 					}
+				} else if (USARTReceiver == 0x0A) { // Edit select level
+					
+				} else if (USARTReceiver == 0x0B) { // Edit add level
+					
 				}
 			}
 			
