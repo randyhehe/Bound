@@ -13,6 +13,7 @@ unsigned char displayBlank = 0;
 
 unsigned char numLevels = 0;
 unsigned char curLevel = 0;
+unsigned char curPattern = 0;
 
 Explosions ExpTick(Explosions explosions);
 unsigned char DeathTick();
@@ -30,7 +31,7 @@ unsigned char displayEDIT;
 enum LED_States {LED_SMStart, LED_Wait, LED_Display} LED_State;
 void LED_Tick();
 
-enum Edit_States {Edit_SMStart, Edit_Wait, Edit_Display} Edit_State;
+enum Edit_States {Edit_SMStart, Edit_Wait, Edit_Display, Edit_Pat} Edit_State;
 void Edit_Tick();
 
 void setLevel();
@@ -325,39 +326,50 @@ int main(void) {
 			} else if (USARTReceiver == 0x07) { // Edit end
 				displayEDIT = 0;
 			} else if (USARTReceiver == 0x08) { // Edit right
-				
-				if (eeprom_read_byte((uint8_t*)(curLevel * 250 + 251)) != 0) {
-					curLevel++;
-					setLevel();
-					
-					if (USART_IsSendReady(0)) {
-						USART_Send(curLevel, 0);
+				if (displayEDIT == 1) {
+					if (eeprom_read_byte((uint8_t*)(curLevel * 250 + 251)) != 0) {
+						curLevel++;
+						setLevel();
+						
+						if (USART_IsSendReady(0)) {
+							USART_Send(curLevel, 0);
+						}
+						if (USART_IsSendReady(0)) {
+							unsigned char numPatterns = eeprom_read_byte((uint8_t*)(curLevel*250 + 1)) | 0x80;
+							USART_Send(numPatterns, 0);
+						}
 					}
-					if (USART_IsSendReady(0)) {
-						unsigned char numPatterns = eeprom_read_byte((uint8_t*)(curLevel*250 + 1)) | 0x80;
-						USART_Send(numPatterns, 0);
+				} else if (displayEDIT == 2) {
+					if (curPattern < explosions.index - 1) {
+						curPattern++;
 					}
 				}
 			} else if (USARTReceiver == 0x09) { // Edit left
-				if (curLevel > 0) {
-					curLevel--;
-					setLevel();
-					
-					if (USART_IsSendReady(0)) {
-						USART_Send(curLevel, 0);
+				if (displayEDIT == 1) {
+					if (curLevel > 0) {
+						curLevel--;
+						setLevel();
+						
+						if (USART_IsSendReady(0)) {
+							USART_Send(curLevel, 0);
+						}
+						
+						if (USART_IsSendReady(0)) {
+							unsigned char numPatterns = eeprom_read_byte((uint8_t*)(curLevel*250 + 1)) | 0x80;
+							USART_Send(numPatterns, 0);
+						}
 					}
-					
-					if (USART_IsSendReady(0)) {
-						unsigned char numPatterns = eeprom_read_byte((uint8_t*)(curLevel*250 + 1)) | 0x80;
-						USART_Send(numPatterns, 0);
+				} 
+				else if (displayEDIT == 2) {
+					if (curPattern > 0) {
+						curPattern--;
 					}
-				} else if (USARTReceiver == 0x0A) { // Edit select level
-					
-				} else if (USARTReceiver == 0x0B) { // Edit add level
-					
 				}
+			} else if (USARTReceiver == 0x0E) { // go from regular editing screen to pattern screen
+				displayEDIT = 2;
+			} else if (USARTReceiver == 0x0F) {
+				displayEDIT = 1;
 			}
-			
 		}
 	}
 	
@@ -411,21 +423,41 @@ void Edit_Tick() {
 			break;
 			
 		case Edit_Wait:
-			if (!displayEDIT) {
+			if (displayEDIT == 0) {
 				Edit_State = Edit_Wait;
-			} else if (displayEDIT) {
+			} else if (displayEDIT == 1) {
 				Edit_State = Edit_Display;
+			} else if (displayEDIT == 2) {
+				Edit_State = Edit_Pat;
 			} 
 			break;
 			
 		case Edit_Display:
-			if (!displayEDIT) {
+			if (displayEDIT == 0) {
 				Edit_State = Edit_Wait;
 				d3_setMatrixColor(blankMatrix.m, RED);
 				d3_setMatrixColor(blankMatrix.m, GREEN);
 				d3_setMatrixColor(blankMatrix.m, BLUE);
-			} else if (displayEDIT) {
+			} else if (displayEDIT == 1) {
 				Edit_State = Edit_Display;
+			} else if (displayEDIT == 2) {
+				Edit_State = Edit_Pat;
+			}
+			break;
+			
+		case Edit_Pat:
+			if (displayEDIT == 0) {
+				Edit_State = Edit_Wait;
+				d3_setMatrixColor(blankMatrix.m, RED);
+				d3_setMatrixColor(blankMatrix.m, GREEN);
+				d3_setMatrixColor(blankMatrix.m, BLUE);
+			} else if (displayEDIT == 1) {
+				Edit_State = Edit_Display;
+				d3_setMatrixColor(blankMatrix.m, RED);
+				d3_setMatrixColor(blankMatrix.m, GREEN);
+				d3_setMatrixColor(blankMatrix.m, BLUE);
+			} else if (displayEDIT == 2) {
+				Edit_State = Edit_Pat;
 			}
 			break;
 			
@@ -443,9 +475,12 @@ void Edit_Tick() {
 		case Edit_Display:
 			explosions = ExpTick(explosions);
 			d3_setMatrixColor(wallMatrix.m, BLUE);
-			
 			break;
 			
+		case Edit_Pat:
+			d3_setMatrixColor(explosions.matricies[curPattern].m, RED);
+			break;
+		
 		default:
 			break;
 	}
@@ -469,9 +504,9 @@ void LED_Tick() {
 			break;
 		
 		case LED_Display:
-			if (displayLED) {
+			 if (displayLED) {
 				LED_State = LED_Display;
-				} else if (!displayLED) {
+			} else if (!displayLED) {
 				LED_State = LED_Wait; 
 				d3_setMatrixColor(blankMatrix.m, RED);
 				d3_setMatrixColor(blankMatrix.m, GREEN);
