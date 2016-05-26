@@ -325,6 +325,8 @@ int main(void) {
 				}
 			} else if (USARTReceiver == 0x07) { // Edit end
 				displayEDIT = 0;
+				curLevel = 0;
+				curPattern = 0;
 			} else if (USARTReceiver == 0x08) { // Edit right
 				if (displayEDIT == 1) {
 					if (eeprom_read_byte((uint8_t*)(curLevel * 250 + 251)) != 0) {

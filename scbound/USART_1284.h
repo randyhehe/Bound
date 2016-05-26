@@ -74,7 +74,25 @@ unsigned char USART_HasReceived(unsigned char usartNum)
 //Returns: None
 void USART_Flush(unsigned char usartNum)
 {
-	static unsigned char dummy;
+	static unsigned char 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	dummy;
 	if (usartNum != 1) {
 		while ( UCSR0A & (1 << RXC0) ) { dummy = UDR0; }
 	}
