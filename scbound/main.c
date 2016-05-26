@@ -34,8 +34,18 @@ void LED_Tick();
 enum Edit_States {Edit_SMStart, Edit_Wait, Edit_Display, Edit_Pat} Edit_State;
 void Edit_Tick();
 
+void KB_Tick();
+
 void setLevel();
 void initNumLevel();
+
+void displayClear();
+void displayLevel();
+void displayGame();
+
+void kpReceiver();
+
+void sendLevelDetails();
 
 
 int main(void) {
@@ -282,99 +292,8 @@ int main(void) {
 	while (1) {
 		LED_Tick();
 		Edit_Tick();
-		
-		if (USART_HasReceived(0)) {
-			USARTReceiver = USART_Receive(0);
-			
-			if (USARTReceiver == 0x00) { // game up
-				if (userMatrix.row < 7 && GetBit(wallMatrix.m[userMatrix.row + 1], userMatrix.column)) {
-					userMatrix.row++;
-					userMatrix.m[userMatrix.row - 1] = SetBit(userMatrix.m[userMatrix.row - 1], userMatrix.column, 1);
-					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
-				}
-			} else if (USARTReceiver == 0x01) { // game right
-				if (userMatrix.column  < 7 && GetBit(wallMatrix.m[userMatrix.row], userMatrix.column + 1)) {
-					userMatrix.column++;
-					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column - 1, 1);
-					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
-				}
-			} else if (USARTReceiver == 0x02) { // game down
-				if (userMatrix.row > 0  && GetBit(wallMatrix.m[userMatrix.row - 1], userMatrix.column)) {
-					userMatrix.row--;
-					userMatrix.m[userMatrix.row + 1] = SetBit(userMatrix.m[userMatrix.row + 1], userMatrix.column, 1);
-					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
-				}
-			} else if (USARTReceiver == 0x03) { // game left
-				if (userMatrix.column > 0 &&  GetBit(wallMatrix.m[userMatrix.row], userMatrix.column - 1)) {
-					userMatrix.column--;
-					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column + 1, 1);
-					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
-				}
-			} else if (USARTReceiver == 0x04) { // Game start
-				displayLED = 1;
-			} else if (USARTReceiver == 0x05) { // Game end
-				displayLED = 0;
-			} else if (USARTReceiver == 0x06) { // Edit start
-				displayEDIT = 1;
-				if (USART_IsSendReady(0)) {
-					USART_Send(curLevel, 0);
-				}
-				if (USART_IsSendReady(0)) {
-					unsigned char numPatterns = eeprom_read_byte((uint8_t*)(curLevel*250 + 1)) | 0x80;
-					USART_Send(numPatterns, 0);
-				}
-			} else if (USARTReceiver == 0x07) { // Edit end
-				displayEDIT = 0;
-				curLevel = 0;
-				curPattern = 0;
-			} else if (USARTReceiver == 0x08) { // Edit right
-				if (displayEDIT == 1) {
-					if (eeprom_read_byte((uint8_t*)(curLevel * 250 + 251)) != 0) {
-						curLevel++;
-						setLevel();
-						
-						if (USART_IsSendReady(0)) {
-							USART_Send(curLevel, 0);
-						}
-						if (USART_IsSendReady(0)) {
-							unsigned char numPatterns = eeprom_read_byte((uint8_t*)(curLevel*250 + 1)) | 0x80;
-							USART_Send(numPatterns, 0);
-						}
-					}
-				} else if (displayEDIT == 2) {
-					if (curPattern < explosions.index - 1) {
-						curPattern++;
-					}
-				}
-			} else if (USARTReceiver == 0x09) { // Edit left
-				if (displayEDIT == 1) {
-					if (curLevel > 0) {
-						curLevel--;
-						setLevel();
-						
-						if (USART_IsSendReady(0)) {
-							USART_Send(curLevel, 0);
-						}
-						
-						if (USART_IsSendReady(0)) {
-							unsigned char numPatterns = eeprom_read_byte((uint8_t*)(curLevel*250 + 1)) | 0x80;
-							USART_Send(numPatterns, 0);
-						}
-					}
-				} 
-				else if (displayEDIT == 2) {
-					if (curPattern > 0) {
-						curPattern--;
-					}
-				}
-			} else if (USARTReceiver == 0x0E) { // go from regular editing screen to pattern screen
-				displayEDIT = 2;
-			} else if (USARTReceiver == 0x0F) {
-				displayEDIT = 1;
-			}
-		}
+		KB_Tick();
 	}
-	
 }
 
 int ETIMERTick(int state) {
@@ -437,9 +356,7 @@ void Edit_Tick() {
 		case Edit_Display:
 			if (displayEDIT == 0) {
 				Edit_State = Edit_Wait;
-				d3_setMatrixColor(blankMatrix.m, RED);
-				d3_setMatrixColor(blankMatrix.m, GREEN);
-				d3_setMatrixColor(blankMatrix.m, BLUE);
+				displayClear();
 			} else if (displayEDIT == 1) {
 				Edit_State = Edit_Display;
 			} else if (displayEDIT == 2) {
@@ -450,14 +367,9 @@ void Edit_Tick() {
 		case Edit_Pat:
 			if (displayEDIT == 0) {
 				Edit_State = Edit_Wait;
-				d3_setMatrixColor(blankMatrix.m, RED);
-				d3_setMatrixColor(blankMatrix.m, GREEN);
-				d3_setMatrixColor(blankMatrix.m, BLUE);
+				displayClear();
 			} else if (displayEDIT == 1) {
 				Edit_State = Edit_Display;
-				d3_setMatrixColor(blankMatrix.m, RED);
-				d3_setMatrixColor(blankMatrix.m, GREEN);
-				d3_setMatrixColor(blankMatrix.m, BLUE);
 			} else if (displayEDIT == 2) {
 				Edit_State = Edit_Pat;
 			}
@@ -475,8 +387,7 @@ void Edit_Tick() {
 			break;
 		
 		case Edit_Display:
-			explosions = ExpTick(explosions);
-			d3_setMatrixColor(wallMatrix.m, BLUE);
+			displayLevel();
 			break;
 			
 		case Edit_Pat:
@@ -510,9 +421,7 @@ void LED_Tick() {
 				LED_State = LED_Display;
 			} else if (!displayLED) {
 				LED_State = LED_Wait; 
-				d3_setMatrixColor(blankMatrix.m, RED);
-				d3_setMatrixColor(blankMatrix.m, GREEN);
-				d3_setMatrixColor(blankMatrix.m, BLUE);
+				displayClear();
 			}
 			break;
 		
@@ -528,10 +437,7 @@ void LED_Tick() {
 			break;
 		
 		case LED_Display:
-			explosions = ExpTick(explosions);
-			DeathTick();
-			d3_setMatrixColor(userMatrix.m, GREEN);
-			d3_setMatrixColor(wallMatrix.m, BLUE);
+			displayGame();
 			break;
 		
 		default:
@@ -597,5 +503,145 @@ void setLevel() {
 		explosions = pushExplosion(explosions, matrix, timeBetween, timeDuration);
 		
 		tempCnt +=10;
+	}
+}
+
+void displayLevel() {
+	explosions = ExpTick(explosions);
+	d3_setMatrixColor(wallMatrix.m, BLUE);
+}
+
+void displayGame() {
+	displayLevel();
+	DeathTick();
+	d3_setMatrixColor(userMatrix.m, GREEN);
+}
+
+void displayClear() {
+	d3_setMatrixColor(blankMatrix.m, GREEN);
+	d3_setMatrixColor(blankMatrix.m, BLUE);
+	d3_setMatrixColor(blankMatrix.m, RED);
+}
+
+void KB_Tick() {
+	kpReceiver();
+}
+
+void sendLevelDetails() {
+	if (USART_IsSendReady(0)) {
+		USART_Send(curLevel, 0);	// Send Current Level
+	}
+	if (USART_IsSendReady(0)) {
+		unsigned char numPatterns = eeprom_read_byte((uint8_t*)(curLevel*250 + 1)) | 0x80; // Send Current Level numPatterns
+		USART_Send(numPatterns, 0);
+	}
+}
+
+void sendPatDetails() {
+	if (USART_IsSendReady(0)) {
+		USART_Send(explosions.timeDuration[curPattern], 0);
+	}
+	
+	if (USART_IsSendReady(0)) {
+		USART_Send(explosions.timeBetween[curPattern] | 0x80, 0);
+	}
+}
+
+void kpReceiver() {
+	if (USART_HasReceived(0)) {
+		USARTReceiver = USART_Receive(0);
+		
+		if (USARTReceiver == 0x00) { // Game Up Button
+			if (userMatrix.row < 7 && GetBit(wallMatrix.m[userMatrix.row + 1], userMatrix.column)) { // Move if allowed
+				userMatrix.row++;
+				userMatrix.m[userMatrix.row - 1] = SetBit(userMatrix.m[userMatrix.row - 1], userMatrix.column, 1);
+				userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
+			}
+		}
+		
+		else if (USARTReceiver == 0x01) { // Game Right Button
+			if (userMatrix.column  < 7 && GetBit(wallMatrix.m[userMatrix.row], userMatrix.column + 1)) { // Move if allowed
+				userMatrix.column++;
+				userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column - 1, 1);
+				userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
+			}
+		}
+		
+		else if (USARTReceiver == 0x02) { // Game Down Button
+			if (userMatrix.row > 0  && GetBit(wallMatrix.m[userMatrix.row - 1], userMatrix.column)) { // Move if allowed
+				userMatrix.row--;
+				userMatrix.m[userMatrix.row + 1] = SetBit(userMatrix.m[userMatrix.row + 1], userMatrix.column, 1);
+				userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
+			}
+		}
+		
+		else if (USARTReceiver == 0x03) { // Game Left Button
+			if (userMatrix.column > 0 &&  GetBit(wallMatrix.m[userMatrix.row], userMatrix.column - 1)) { // Move if allowed
+				userMatrix.column--;
+				userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column + 1, 1);
+				userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
+			}
+		}
+		
+		else if (USARTReceiver == 0x04) { // Game Start Button
+			displayLED = 1;
+		} 
+		
+		else if (USARTReceiver == 0x05) { // Game End Button
+			displayLED = 0;
+		}
+		
+		else if (USARTReceiver == 0x06) { // Edit Start Button
+			displayEDIT = 1;
+			sendLevelDetails();
+		}
+		
+		else if (USARTReceiver == 0x07) { // Edit end
+			displayEDIT = 0;
+			curLevel = 0;
+			curPattern = 0;
+			setLevel();
+		}
+		
+		else if (USARTReceiver == 0x08 && displayEDIT == 1) { // displayEDIT == 1 && Right pressed
+			if (eeprom_read_byte((uint8_t*)(curLevel * 250 + 251)) != 0) { // if there exists a next level
+				curLevel++;
+				setLevel();
+				
+				sendLevelDetails();
+			}
+		}
+		else if (USARTReceiver == 0x08 && displayEDIT == 2) { // displayEDIT == 2 && Right pressed
+			if (curPattern < explosions.index - 1) {	// if there exists a next pattern
+				curPattern++;
+				sendPatDetails();
+			}
+		} 
+		
+		else if (USARTReceiver == 0x09 && displayEDIT == 1) {
+			if (curLevel > 0) {
+				curLevel--;
+				setLevel();
+				
+				sendLevelDetails();
+			}
+		}
+		
+		else if (USARTReceiver == 0x09 && displayEDIT == 2) {
+			if (curPattern > 0) {
+				curPattern--;
+				sendPatDetails();
+			} 
+		}
+		
+		else if (USARTReceiver == 0x0E) { // go from regular editing screen to pattern screen
+			displayEDIT = 2;
+			sendPatDetails();
+		}
+		
+		else if (USARTReceiver == 0x0F) { // go from pattern screen to regular editing screen
+			displayEDIT = 1;
+			sendLevelDetails();
+		}
 	}
 }
