@@ -601,6 +601,7 @@ void kpReceiver() {
 			curLevel = 0;
 			curPattern = 0;
 			setLevel();
+			explosions.displayIndex = 0;
 		}
 		
 		else if (USARTReceiver == 0x08 && displayEDIT == 1) { // displayEDIT == 1 && Right pressed
@@ -642,6 +643,8 @@ void kpReceiver() {
 		else if (USARTReceiver == 0x0F) { // go from pattern screen to regular editing screen
 			displayEDIT = 1;
 			sendLevelDetails();
+			explosions.displayIndex = 0;
+			curPattern = 0;
 		}
 	}
 }
