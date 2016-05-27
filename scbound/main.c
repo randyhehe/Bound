@@ -15,6 +15,12 @@ unsigned char numLevels = 0;
 unsigned char curLevel = 0;
 unsigned char curPattern = 0;
 
+unsigned short durationIndex = 0;
+unsigned char durationChanged = 0;
+unsigned short betweenIndex = 0;
+unsigned char betweenChanged = 0;
+
+
 Explosions ExpTick(Explosions explosions);
 unsigned char DeathTick();
 
@@ -74,6 +80,10 @@ int main(void) {
 	setLevel();
 	
 	userMatrix = initSingleUserMatrix(userMatrix);
+	
+	
+	
+	eeprom_update_byte((uint8_t*)(752), 0);
 	
 	while (1) {
 		LED_Tick();
@@ -338,6 +348,30 @@ void setLevel() {
 	}
 }
 
+void addPattern() {
+	unsigned short startingIndex = curLevel * 250;
+	
+	unsigned char numPatterns = eeprom_read_byte((uint8_t*)(startingIndex + 1));
+	
+	unsigned short tempCnt = startingIndex + 11;
+	for (unsigned char i = 0; i < numPatterns; i++) {
+		tempCnt += 10;
+	}
+	
+	for (unsigned char i = 0; i < 8; i++) {
+		eeprom_update_byte((uint8_t*)(i + tempCnt), 0xFF);
+	}
+	
+	// Set duration/between for this new pattern 0;
+	eeprom_update_byte((uint8_t*)(8 + tempCnt), 0); 
+	eeprom_update_byte((uint8_t*)(9 + tempCnt), 0);
+	
+	numPatterns++;
+	eeprom_update_byte((uint8_t*)(startingIndex + 1), numPatterns);
+	
+	setLevel();
+}
+
 void updatePattern() {
 	unsigned short startingIndex = curLevel * 250;
 	
@@ -360,18 +394,15 @@ void editBetween(unsigned char i) {
 		tempCnt += 10;
 	}
 	
-	unsigned char timeBetween = eeprom_read_byte((uint8_t*)(tempCnt));
-	
 	if (i) {
-		timeBetween += 1;
-	} else {
-		timeBetween -= 1;
+		explosions.timeBetween[curPattern]++;
+		} else {
+		explosions.timeBetween[curPattern]--;
 	}
 
-	eeprom_update_byte((uint8_t*)tempCnt, timeBetween);
-	
-	// update current listing
-	explosions.timeBetween[curPattern] = timeBetween;
+	//eeprom_update_byte((uint8_t*)tempCnt, timeBetween);
+	betweenIndex = tempCnt;
+	betweenChanged = 1;
 	
 	sendPatDetails();
 } 
@@ -385,18 +416,15 @@ void editDuration(unsigned char i) {
 		tempCnt += 10;
 	}
 	
-	unsigned char timeDuration = eeprom_read_byte((uint8_t*)(tempCnt));
-	
 	if (i) {
-		timeDuration += 1;
-		} else {
-		timeDuration -= 1;
+		explosions.timeDuration[curPattern]++;
+	} else {
+		explosions.timeDuration[curPattern]--;
 	}
 
-	eeprom_update_byte((uint8_t*)tempCnt, timeDuration);
-	
-	// update current listing
-	explosions.timeDuration[curPattern] = timeDuration;
+	//eeprom_update_byte((uint8_t*)tempCnt, timeDuration);
+	durationIndex = tempCnt;
+	durationChanged = 1;
 	
 	sendPatDetails();
 	
@@ -441,6 +469,18 @@ void sendPatDetails() {
 	
 	if (USART_IsSendReady(0)) {
 		USART_Send(explosions.timeBetween[curPattern] | 0x80, 0);
+	}
+}
+
+void storePattern() {
+	if (betweenChanged) {
+		eeprom_update_byte((uint8_t*)betweenIndex, explosions.timeBetween[curPattern]);
+		betweenChanged = 0;
+	}
+	
+	if (durationChanged) {
+		eeprom_update_byte((uint8_t*)durationIndex, explosions.timeDuration[curPattern]);
+		durationChanged = 0;
 	}
 }
 
@@ -494,6 +534,8 @@ void kpReceiver() {
 		}
 		
 		else if (USARTReceiver == 0x07) { // Edit end
+			storePattern();
+			
 			displayEDIT = 0;
 			curLevel = 0;
 			curPattern = 0;
@@ -511,6 +553,8 @@ void kpReceiver() {
 		}
 		else if (USARTReceiver == 0x08 && displayEDIT == 2) { // displayEDIT == 2 && Right pressed
 			if (curPattern < explosions.index - 1) {	// if there exists a next pattern
+				storePattern();
+				
 				curPattern++;
 				sendPatDetails();
 			}
@@ -527,6 +571,8 @@ void kpReceiver() {
 		
 		else if (USARTReceiver == 0x09 && displayEDIT == 2) {
 			if (curPattern > 0) {
+				storePattern();
+				
 				curPattern--;
 				sendPatDetails();
 			} 
@@ -534,11 +580,18 @@ void kpReceiver() {
 		
 		else if (USARTReceiver == 0x0E && displayEDIT == 1) { // go from regular editing screen to pattern screen
 			displayEDIT = 2;
+			durationChanged = 0;
+			betweenChanged = 0;
 			sendPatDetails();
 		}
 		
 		else if (USARTReceiver == 0x0E && displayEDIT == 2) {
+			storePattern();
 			displayEDIT = 3;
+		}
+		
+		else if (USARTReceiver == 0x50 && displayEDIT == 2) { // '7' pressed when at pattern screen
+			addPattern();
 		}
 		
 		else if (USARTReceiver == 0x30) {
@@ -549,6 +602,7 @@ void kpReceiver() {
 		}
  		
 		else if (USARTReceiver == 0x0F) { // go from pattern screen to regular editing screen
+			storePattern();
 			displayEDIT = 1;
 			sendLevelDetails();
 			explosions.displayIndex = 0;

@@ -235,7 +235,7 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000     0x145e
+.text           0x00000000     0x1578
  *(.vectors)
  .vectors       0x00000000       0x8c C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.0.98/gcc/dev/atmega1284/avr51/crtatmega1284.o
                 0x00000000                __vector_default
@@ -389,53 +389,59 @@ END GROUP
                 0x0000080a                setLevel
  .text.WinTick  0x00000a1c       0xa0 main.o
                 0x00000a1c                WinTick
+ .text.addPattern
+                0x00000abc       0xae main.o
+                0x00000abc                addPattern
  .text.updatePattern
-                0x00000abc       0x84 main.o
-                0x00000abc                updatePattern
+                0x00000b6a       0x84 main.o
+                0x00000b6a                updatePattern
  .text.displayLevel
-                0x00000b40       0x7a main.o
-                0x00000b40                displayLevel
+                0x00000bee       0x7a main.o
+                0x00000bee                displayLevel
  .text.displayGame
-                0x00000bba       0x10 main.o
-                0x00000bba                displayGame
+                0x00000c68       0x10 main.o
+                0x00000c68                displayGame
  .text.displayClear
-                0x00000bca       0x1a main.o
-                0x00000bca                displayClear
+                0x00000c78       0x1a main.o
+                0x00000c78                displayClear
  .text.Edit_Tick
-                0x00000be4      0x146 main.o
-                0x00000be4                Edit_Tick
+                0x00000c92      0x146 main.o
+                0x00000c92                Edit_Tick
  .text.LED_Tick
-                0x00000d2a       0xc6 main.o
-                0x00000d2a                LED_Tick
+                0x00000dd8       0xc6 main.o
+                0x00000dd8                LED_Tick
  .text.sendLevelDetails
-                0x00000df0       0x30 main.o
-                0x00000df0                sendLevelDetails
+                0x00000e9e       0x30 main.o
+                0x00000e9e                sendLevelDetails
  .text.sendPatDetails
-                0x00000e20       0x34 main.o
-                0x00000e20                sendPatDetails
+                0x00000ece       0x34 main.o
+                0x00000ece                sendPatDetails
  .text.editBetween
-                0x00000e54       0x7a main.o
-                0x00000e54                editBetween
+                0x00000f02       0x74 main.o
+                0x00000f02                editBetween
  .text.editDuration
-                0x00000ece       0x7a main.o
-                0x00000ece                editDuration
+                0x00000f76       0x74 main.o
+                0x00000f76                editDuration
+ .text.storePattern
+                0x00000fea       0x46 main.o
+                0x00000fea                storePattern
  .text.kpReceiver
-                0x00000f48      0x37c main.o
-                0x00000f48                kpReceiver
- .text.main     0x000012c4      0x162 main.o
-                0x000012c4                main
+                0x00001030      0x3a6 main.o
+                0x00001030                kpReceiver
+ .text.main     0x000013d6      0x16a main.o
+                0x000013d6                main
  .text.avr-libc
-                0x00001426       0x10 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.0.98/gcc/dev/atmega1284/avr51\libatmega1284.a(eerd_byte.o)
-                0x00001426                eeprom_read_byte
+                0x00001540       0x10 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.0.98/gcc/dev/atmega1284/avr51\libatmega1284.a(eerd_byte.o)
+                0x00001540                eeprom_read_byte
  .text.avr-libc
-                0x00001436       0x24 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.0.98/gcc/dev/atmega1284/avr51\libatmega1284.a(eeupd_byte.o)
-                0x00001436                eeprom_update_byte
-                0x00001438                eeprom_update_r18
-                0x0000145a                . = ALIGN (0x2)
+                0x00001550       0x24 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.0.98/gcc/dev/atmega1284/avr51\libatmega1284.a(eeupd_byte.o)
+                0x00001550                eeprom_update_byte
+                0x00001552                eeprom_update_r18
+                0x00001574                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x0000145a        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr51\libgcc.a(_exit.o)
-                0x0000145a                _exit
-                0x0000145a                exit
+ .fini9         0x00001574        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr51\libgcc.a(_exit.o)
+                0x00001574                _exit
+                0x00001574                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -454,11 +460,11 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x0000145a        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr51\libgcc.a(_exit.o)
+ .fini0         0x00001574        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr51\libgcc.a(_exit.o)
  *(.fini0)
-                0x0000145e                _etext = .
+                0x00001578                _etext = .
 
-.data           0x00800100        0x4 load address 0x0000145e
+.data           0x00800100        0x4 load address 0x00001578
                 0x00800100                PROVIDE (__data_start, .)
  *(.data)
  *(.data*)
@@ -472,51 +478,63 @@ END GROUP
                 0x00800104                _edata = .
                 0x00800104                PROVIDE (__data_end, .)
 
-.bss            0x00800104       0xf7
+.bss            0x00800104       0xfd
                 0x00800104                PROVIDE (__bss_start, .)
  *(.bss)
  *(.bss*)
- .bss.cnt.1898  0x00800104        0x2 main.o
- .bss.curPattern
+ .bss.cnt.1902  0x00800104        0x2 main.o
+ .bss.betweenChanged
                 0x00800106        0x1 main.o
-                0x00800106                curPattern
- .bss.curLevel  0x00800107        0x1 main.o
-                0x00800107                curLevel
- .bss.numLevels
-                0x00800108        0x1 main.o
-                0x00800108                numLevels
- .bss.displayBlank
+                0x00800106                betweenChanged
+ .bss.betweenIndex
+                0x00800107        0x2 main.o
+                0x00800107                betweenIndex
+ .bss.durationChanged
                 0x00800109        0x1 main.o
-                0x00800109                displayBlank
+                0x00800109                durationChanged
+ .bss.durationIndex
+                0x0080010a        0x2 main.o
+                0x0080010a                durationIndex
+ .bss.curPattern
+                0x0080010c        0x1 main.o
+                0x0080010c                curPattern
+ .bss.curLevel  0x0080010d        0x1 main.o
+                0x0080010d                curLevel
+ .bss.numLevels
+                0x0080010e        0x1 main.o
+                0x0080010e                numLevels
+ .bss.displayBlank
+                0x0080010f        0x1 main.o
+                0x0080010f                displayBlank
  .bss.contClock
-                0x0080010a        0x4 main.o
-                0x0080010a                contClock
+                0x00800110        0x4 main.o
+                0x00800110                contClock
  .bss._avr_timer_cntcurr
-                0x0080010e        0x4 main.o
-                0x0080010e                _avr_timer_cntcurr
+                0x00800114        0x4 main.o
+                0x00800114                _avr_timer_cntcurr
  *(COMMON)
- COMMON         0x00800112       0xe9 main.o
-                0x00800112                tasks
-                0x0080011e                LED_State
-                0x0080011f                USARTReceiver
-                0x00800120                displayLED
-                0x00800121                blankMatrix
-                0x00800129                displayEDIT
-                0x0080012a                matrix
-                0x00800132                explosions
-                0x008001e8                userMatrix
-                0x008001f2                wallMatrix
-                0x008001fa                Edit_State
-                0x008001fb                PROVIDE (__bss_end, .)
-                0x0000145e                __data_load_start = LOADADDR (.data)
-                0x00001462                __data_load_end = (__data_load_start + SIZEOF (.data))
+ COMMON         0x00800118       0xe9 main.o
+                0x00800118                tasks
+                0x00800124                LED_State
+                0x00800125                USARTReceiver
+                0x00800126                displayLED
+                0x00800127                blankMatrix
+                0x0080012f                displayEDIT
+                0x00800130                matrix
+                0x00800138                explosions
+                0x008001ee                userMatrix
+                0x008001f8                wallMatrix
+                0x00800200                Edit_State
+                0x00800201                PROVIDE (__bss_end, .)
+                0x00001578                __data_load_start = LOADADDR (.data)
+                0x0000157c                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x008001fb        0x0
-                0x008001fb                PROVIDE (__noinit_start, .)
+.noinit         0x00800201        0x0
+                0x00800201                PROVIDE (__noinit_start, .)
  *(.noinit*)
-                0x008001fb                PROVIDE (__noinit_end, .)
-                0x008001fb                _end = .
-                0x008001fb                PROVIDE (__heap_start, .)
+                0x00800201                PROVIDE (__noinit_end, .)
+                0x00800201                _end = .
+                0x00800201                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
  *(.eeprom*)
@@ -580,38 +598,38 @@ END GROUP
 .debug_sfnames
  *(.debug_sfnames)
 
-.debug_aranges  0x00000000      0x198
+.debug_aranges  0x00000000      0x1a8
  *(.debug_aranges)
  .debug_aranges
-                0x00000000      0x198 main.o
+                0x00000000      0x1a8 main.o
 
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000     0x1ac9
+.debug_info     0x00000000     0x1c1a
  *(.debug_info .gnu.linkonce.wi.*)
- .debug_info    0x00000000     0x1ac9 main.o
+ .debug_info    0x00000000     0x1c1a main.o
 
 .debug_abbrev   0x00000000      0x4c4
  *(.debug_abbrev)
  .debug_abbrev  0x00000000      0x4c4 main.o
 
-.debug_line     0x00000000     0x12a0
+.debug_line     0x00000000     0x1378
  *(.debug_line .debug_line.* .debug_line_end)
- .debug_line    0x00000000     0x12a0 main.o
+ .debug_line    0x00000000     0x1378 main.o
 
-.debug_frame    0x00000000      0x598
+.debug_frame    0x00000000      0x5c0
  *(.debug_frame)
- .debug_frame   0x00000000      0x598 main.o
+ .debug_frame   0x00000000      0x5c0 main.o
 
-.debug_str      0x00000000      0x65a
+.debug_str      0x00000000      0x6ac
  *(.debug_str)
- .debug_str     0x00000000      0x65a main.o
-                                0x6ae (size before relaxing)
+ .debug_str     0x00000000      0x6ac main.o
+                                0x700 (size before relaxing)
 
-.debug_loc      0x00000000     0x19bd
+.debug_loc      0x00000000     0x1a78
  *(.debug_loc)
- .debug_loc     0x00000000     0x19bd main.o
+ .debug_loc     0x00000000     0x1a78 main.o
 
 .debug_macinfo
  *(.debug_macinfo)
@@ -631,9 +649,9 @@ END GROUP
 .debug_pubtypes
  *(.debug_pubtypes)
 
-.debug_ranges   0x00000000      0x290
+.debug_ranges   0x00000000      0x2b8
  *(.debug_ranges)
- .debug_ranges  0x00000000      0x290 main.o
+ .debug_ranges  0x00000000      0x2b8 main.o
 
 .debug_macro
  *(.debug_macro)
