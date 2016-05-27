@@ -352,6 +352,9 @@ void addPattern() {
 	unsigned short startingIndex = curLevel * 250;
 	
 	unsigned char numPatterns = eeprom_read_byte((uint8_t*)(startingIndex + 1));
+	if (numPatterns >= 18) {
+		return;
+	}
 	
 	unsigned short tempCnt = startingIndex + 11;
 	for (unsigned char i = 0; i < numPatterns; i++) {
@@ -368,6 +371,42 @@ void addPattern() {
 	
 	numPatterns++;
 	eeprom_update_byte((uint8_t*)(startingIndex + 1), numPatterns);
+	
+	setLevel();
+}
+
+void deletePattern() {
+	unsigned short startingIndex = curLevel * 250;
+	
+	unsigned char numPatterns = eeprom_read_byte((uint8_t*)(startingIndex + 1));
+	if (numPatterns <= 1) {
+		return;
+	}
+	
+	unsigned short tempCnt = startingIndex + 11;
+	for (unsigned char i = 0; i < curPattern; i++) {
+		tempCnt += 10;
+	}
+	
+	unsigned char iterations = 0;
+	unsigned char tempPatternIndex = curPattern;
+	while (tempPatternIndex < numPatterns) {
+		for (unsigned char i = 0; i < 8; i++) {
+			unsigned char next = eeprom_read_byte((uint8_t*)tempCnt + i + 10);
+			eeprom_update_byte((uint8_t*)tempCnt + i, next);
+		}
+		
+		tempPatternIndex++;
+		tempCnt += 10;
+		iterations++;
+	}
+	
+	numPatterns--;
+	eeprom_update_byte((uint8_t*)(startingIndex + 1), numPatterns);
+	
+	if (iterations == 1) {
+		curPattern--;
+	}
 	
 	setLevel();
 }
@@ -592,6 +631,10 @@ void kpReceiver() {
 		
 		else if (USARTReceiver == 0x50 && displayEDIT == 2) { // '7' pressed when at pattern screen
 			addPattern();
+		}
+		
+		else if (USARTReceiver == 0x60 && displayEDIT == 2) {
+			deletePattern();
 		}
 		
 		else if (USARTReceiver == 0x30) {
