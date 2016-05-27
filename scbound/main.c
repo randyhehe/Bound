@@ -314,7 +314,7 @@ void initNumLevel() {
 }
 
 void setLevel() {
-	unsigned short startingIndex = curLevel*250;
+	unsigned short startingIndex = curLevel * 250;
 	unsigned char numPatterns = eeprom_read_byte((uint8_t*)(startingIndex + 1));
 	
 	for (unsigned char i = 0; i < 8; i++) {
@@ -335,6 +335,19 @@ void setLevel() {
 		explosions = pushExplosion(explosions, matrix, timeBetween, timeDuration);
 		
 		tempCnt +=10;
+	}
+}
+
+void updatePattern() {
+	unsigned short startingIndex = curLevel * 250;
+	
+	unsigned short tempCnt = startingIndex + 11;
+	for (unsigned char i = 0; i < curPattern; i++) {
+		tempCnt += 10;
+	}
+	
+	for (unsigned char i = 0; i < 8; i++) {
+		eeprom_update_byte((uint8_t*)tempCnt + i, explosions.matricies[curPattern].m[i]);
 	}
 }
 
@@ -531,6 +544,8 @@ void kpReceiver() {
 		else if (USARTReceiver == 0x30) {
 			displayEDIT = 2;
 			sendPatDetails();
+			// update the current explosion
+			updatePattern();
 		}
  		
 		else if (USARTReceiver == 0x0F) { // go from pattern screen to regular editing screen
