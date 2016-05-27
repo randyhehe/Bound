@@ -424,6 +424,14 @@ void updatePattern() {
 	}
 }
 
+void updateWall() {
+	unsigned short startingIndex = curLevel * 250;
+	
+	for (unsigned char i = 0; i < 8; i++) {
+		eeprom_update_byte((uint8_t*)(startingIndex + 2 + i), wallMatrix.m[i]);
+	}
+}
+
 void editBetween(unsigned char i) {
 	// update storage
 	unsigned short startingIndex = curLevel * 250;
@@ -527,24 +535,24 @@ void kpReceiver() {
 	if (USART_HasReceived(0)) {
 		USARTReceiver = USART_Receive(0);
 		
-		if (USARTReceiver == 0x00) { // Game Up Button
-			if (userMatrix.row < 7 && GetBit(wallMatrix.m[userMatrix.row + 1], userMatrix.column)) { // Move if allowed
-				userMatrix.row++;
-				userMatrix.m[userMatrix.row - 1] = SetBit(userMatrix.m[userMatrix.row - 1], userMatrix.column, 1);
-				userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
+		if (USARTReceiver == 0x00) { // Game Up Button	
+			if (userMatrix.row < 7 && (displayEDIT == 3 || GetBit(wallMatrix.m[userMatrix.row + 1], userMatrix.column))) { // Move if allowed
+					userMatrix.row++;
+					userMatrix.m[userMatrix.row - 1] = SetBit(userMatrix.m[userMatrix.row - 1], userMatrix.column, 1);
+					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
 			}
 		}
 		
 		else if (USARTReceiver == 0x01) { // Game Right Button
-			if (userMatrix.column  < 7 && GetBit(wallMatrix.m[userMatrix.row], userMatrix.column + 1)) { // Move if allowed
-				userMatrix.column++;
-				userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column - 1, 1);
-				userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
+			if (userMatrix.column < 7 && (displayEDIT == 3 || GetBit(wallMatrix.m[userMatrix.row], userMatrix.column + 1))) {
+					userMatrix.column++;
+					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column - 1, 1);
+					userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
 			}
 		}
 		
 		else if (USARTReceiver == 0x02) { // Game Down Button
-			if (userMatrix.row > 0  && GetBit(wallMatrix.m[userMatrix.row - 1], userMatrix.column)) { // Move if allowed
+			if (userMatrix.row > 0  && (displayEDIT == 3 || GetBit(wallMatrix.m[userMatrix.row - 1], userMatrix.column))) { // Move if allowed
 				userMatrix.row--;
 				userMatrix.m[userMatrix.row + 1] = SetBit(userMatrix.m[userMatrix.row + 1], userMatrix.column, 1);
 				userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
@@ -552,7 +560,7 @@ void kpReceiver() {
 		}
 		
 		else if (USARTReceiver == 0x03) { // Game Left Button
-			if (userMatrix.column > 0 &&  GetBit(wallMatrix.m[userMatrix.row], userMatrix.column - 1)) { // Move if allowed
+			if (userMatrix.column > 0 &&  (displayEDIT == 3 || GetBit(wallMatrix.m[userMatrix.row], userMatrix.column - 1))) { // Move if allowed
 				userMatrix.column--;
 				userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column + 1, 1);
 				userMatrix.m[userMatrix.row] = SetBit(userMatrix.m[userMatrix.row], userMatrix.column, 0);
@@ -642,6 +650,7 @@ void kpReceiver() {
 			sendPatDetails();
 			// update the current explosion
 			updatePattern();
+			updateWall();
 		}
  		
 		else if (USARTReceiver == 0x0F) { // go from pattern screen to regular editing screen
@@ -691,13 +700,18 @@ void kpReceiver() {
 		}
 		
 		else if (USARTReceiver == 0x40 && displayEDIT == 3) {
-			if (GetBit(explosions.matricies[curPattern].m[userMatrix.row], userMatrix.column)) {
-				// MAKE SURE TO EDIT EEPROM SHIT
-				explosions.matricies[curPattern].m[userMatrix.row] = SetBit(explosions.matricies[curPattern].m[userMatrix.row], userMatrix.column, 0);
-			} 
-			else {
+			if (!GetBit(explosions.matricies[curPattern].m[userMatrix.row], userMatrix.column)) {
 				// MAKE SURE TO EDIT EEPROM SHIT
 				explosions.matricies[curPattern].m[userMatrix.row] = SetBit(explosions.matricies[curPattern].m[userMatrix.row], userMatrix.column, 1);
+				wallMatrix.m[userMatrix.row] = SetBit(wallMatrix.m[userMatrix.row], userMatrix.column, 0);
+			} 
+			else if (!GetBit(wallMatrix.m[userMatrix.row], userMatrix.column)) {
+				wallMatrix.m[userMatrix.row] = SetBit(wallMatrix.m[userMatrix.row], userMatrix.column, 1);
+			}
+			
+			else {
+				// MAKE SURE TO EDIT EEPROM SHIT
+				explosions.matricies[curPattern].m[userMatrix.row] = SetBit(explosions.matricies[curPattern].m[userMatrix.row], userMatrix.column, 0);
 			}
 		}
 	}
