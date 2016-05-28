@@ -129,9 +129,8 @@ void WinTick() {
 			curLevel++;
 			setLevel();
 			userMatrix = initSingleUserMatrix(userMatrix);
-			if (USART_IsSendReady(0)) {
-				// Update level on LCD
-			}
+			while (!USART_IsSendReady(0)); 
+			// Update level on lcd
 		}
 		else {
 			// All levels complete
@@ -142,9 +141,8 @@ void WinTick() {
 void DeathTick() {	
 	if ((displayBlank == 0) && GetBit(explosions.matricies[explosions.displayIndex].m[userMatrix.row], userMatrix.column) == 0) {
 		userMatrix = initSingleUserMatrix(userMatrix);
-		if (USART_IsSendReady(0)) {
-			USART_Send(0x00, 0);
-		}
+		while (!USART_IsSendReady(0)); 
+		USART_Send(0x00, 0);
 	}
 }
 
@@ -525,7 +523,7 @@ void editBetween(unsigned char i) {
 	betweenIndex = tempCnt;
 	betweenChanged = 1;
 	
-	sendPatDetails();
+	// sendPatDetails();
 } 
 
 void editDuration(unsigned char i) {
@@ -549,7 +547,7 @@ void editDuration(unsigned char i) {
 	durationIndex = tempCnt;
 	durationChanged = 1;
 	
-	sendPatDetails();
+	// sendPatDetails();
 	
 }
 
@@ -576,24 +574,20 @@ void KB_Tick() {
 }
 
 void sendLevelDetails() {
-	if (USART_IsSendReady(0)) {
-		USART_Send(curLevel, 0);	// Send Current Level
-	}
-	if (USART_IsSendReady(0)) {
-		while (!eeprom_is_ready());
-		unsigned char numPatterns = eeprom_read_byte((uint8_t*)(curLevel*250 + 1)) | 0x80; // Send Current Level numPatterns
-		USART_Send(numPatterns, 0);
-	}
+	while (!USART_IsSendReady(0)); 
+	USART_Send(curLevel, 0);	// Send Current Level
+	while (!USART_IsSendReady(0)); 
+	while (!eeprom_is_ready());
+	unsigned char numPatterns = eeprom_read_byte((uint8_t*)(curLevel*250 + 1)) | 0x80; // Send Current Level numPatterns
+	USART_Send(numPatterns, 0);
 }
 
 void sendPatDetails() {
-	if (USART_IsSendReady(0)) {
-		USART_Send(explosions.timeDuration[curPattern], 0);
-	}
+	while (!USART_IsSendReady(0)); 
+	USART_Send(explosions.timeDuration[curPattern], 0);
 	
-	if (USART_IsSendReady(0)) {
-		USART_Send(explosions.timeBetween[curPattern] | 0x80, 0);
-	}
+	while (!USART_IsSendReady(0)); 
+	USART_Send(explosions.timeBetween[curPattern] | 0x80, 0);
 }
 
 void storePattern() {
@@ -722,7 +716,6 @@ void kpReceiver() {
 				
 			case 0x07:	// Edit End
 				displayEDIT = 0;
-				// storePattern(); curLevel = 0; curPattern = 0; setLevel(); explosions.displayIndex = 0;
 				break;
 				
 			case 0x08:	// Edit Right
