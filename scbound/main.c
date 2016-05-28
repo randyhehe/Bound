@@ -404,6 +404,41 @@ void addLevel() {
 	
 	 numLevels++;	// Increment numLevels
  }
+ 
+ void deleteLevel() {
+	 if (numLevels <= 1) {
+		 return;
+	 }
+	 
+	 unsigned short startingIndex = curLevel * 250;
+	 
+	 unsigned short nextLevelIndex = startingIndex + 250;
+	 
+	 // if there is no next level
+	 while (!eeprom_is_ready());
+	 while (eeprom_read_byte((uint8_t*)nextLevelIndex + 1) != 0) {
+		 for (unsigned char i = 1; i <= 250; i++) {
+			 while (!eeprom_is_ready());
+			 unsigned char next = eeprom_read_byte((uint8_t*)nextLevelIndex + i);
+			 while (!eeprom_is_ready());
+			 eeprom_update_byte((uint8_t*)startingIndex + i, next);
+		 }
+		 startingIndex += 250;
+		 nextLevelIndex += 250;
+	 }
+	 
+	 while(!eeprom_is_ready());
+	 eeprom_update_byte((uint8_t*)startingIndex + 1, 0);
+	 
+	 numLevels--;
+	 
+	 if (curLevel == numLevels) {
+		 curLevel--;
+	 }
+	 
+	 setLevel();
+	 sendLevelDetails();
+ }
 
 void addPattern() {
 	unsigned short startingIndex = curLevel * 250;
@@ -420,6 +455,7 @@ void addPattern() {
 		tempCnt += 10;
 	}
 	
+	// Initialize to blank pattern
 	for (unsigned char i = 0; i < 8; i++) {
 		while (!eeprom_is_ready());
 		eeprom_update_byte((uint8_t*)(i + tempCnt), 0xFF);
@@ -522,8 +558,6 @@ void editBetween(unsigned char i) {
 
 	betweenIndex = tempCnt;
 	betweenChanged = 1;
-	
-	// sendPatDetails();
 } 
 
 void editDuration(unsigned char i) {
@@ -546,9 +580,6 @@ void editDuration(unsigned char i) {
 
 	durationIndex = tempCnt;
 	durationChanged = 1;
-	
-	// sendPatDetails();
-	
 }
 
 void displayLevel() {
@@ -745,6 +776,8 @@ void kpReceiver() {
 			case 0x60:
 				if (displayEDIT == 2)		// Pattern Delete
 					deletePattern();
+				else if (displayEDIT == 1)	// Delete Level
+					deleteLevel();
 				break;
 				
 			case 0x30:						// Go from edit 3 to 2 (B pressed)
