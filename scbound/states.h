@@ -10,15 +10,15 @@ typedef struct task {
 
 task tasks[1];
 
-const unsigned long tasksPeriodGCD = 1;
+const unsigned long tasksPeriodGCD = 10;
 
 enum ETIMER_States {ETIMER_SMStart, ETIMER_Wait};
 int ETIMERTick(int state);
 
 void initTasks() {
 	tasks[0].state = ETIMER_SMStart;
-	tasks[0].period = 1;
-	tasks[0].elapsedTime =  1;
+	tasks[0].period = 10;
+	tasks[0].elapsedTime =  10;
 	tasks[0].TickFct = &ETIMERTick;
 }
 
