@@ -65,6 +65,8 @@ int main(void) {
 	
 	initUSART(0);
 	
+	//eeprom_update_byte((uint8_t*)(1), 1);
+	
 	initNumLevel();
 	initTasks();
 	
@@ -80,10 +82,15 @@ int main(void) {
 	setLevel();
 	
 	userMatrix = initSingleUserMatrix(userMatrix);
+	explosions = initExplosions(explosions);
+	matrix = clearSingleMatrix(matrix);
 	
+	// eeprom_update_byte((uint8_t*)(752), 0);
 	
+	//eeprom_update_byte((uint8_t*)(519), 0);
+	//eeprom_update_byte((uint8_t*)(520), 0);
 	
-	eeprom_update_byte((uint8_t*)(752), 0);
+	// eeprom_update_byte((uint8_t*)(251), 1);
 	
 	while (1) {
 		LED_Tick();
@@ -347,6 +354,27 @@ void setLevel() {
 		tempCnt +=10;
 	}
 }
+
+void addLevel() {
+	if (numLevels >= 10) { // Only 10 levels allowed in the game
+		return;
+	}
+	
+	unsigned short startingIndex = 1;
+	while (eeprom_read_byte((uint8_t*)startingIndex) != 0) {
+		startingIndex += 250;
+	}
+	
+	eeprom_update_byte((uint8_t*)startingIndex, 0x01);	// Initialize to one pattern
+	for (unsigned char i = 0; i < 8; i++) {				
+		eeprom_update_byte((uint8_t*)(startingIndex + 1 + i), 0xFF);		// Initialize empty wall matrix
+		eeprom_update_byte((uint8_t*)(startingIndex + 10 + i), 0xFF);	// Initialize empty pattern
+	}
+	eeprom_update_byte((uint8_t*)(startingIndex + 18), 0);
+	eeprom_update_byte((uint8_t*)(startingIndex + 19), 0);
+	
+	 numLevels++;	// Increment numLevels
+ }
 
 void addPattern() {
 	unsigned short startingIndex = curLevel * 250;
@@ -639,6 +667,11 @@ void kpReceiver() {
 		
 		else if (USARTReceiver == 0x50 && displayEDIT == 2) { // '7' pressed when at pattern screen
 			addPattern();
+		}
+		
+		else if (USARTReceiver == 0x50 && displayEDIT == 1) { // '7' pressed when at level screen
+			addLevel();
+			//initNumLevel();
 		}
 		
 		else if (USARTReceiver == 0x60 && displayEDIT == 2) {
