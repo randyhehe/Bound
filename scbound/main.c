@@ -130,7 +130,7 @@ void WinTick() {
 			setLevel();
 			userMatrix = initSingleUserMatrix(userMatrix);
 			while (!USART_IsSendReady(0)); 
-			// Update level on lcd
+			USART_Send(0x32, 0);
 		}
 		else {
 			// All levels complete
@@ -191,6 +191,7 @@ void Edit_Tick() {
 			if (displayEDIT == 0) {
 				Edit_State = Edit_Wait;
 				displayClear();
+				storePattern();
 			} else if (displayEDIT == 1) {
 				Edit_State = Edit_Display;
 				storePattern();
@@ -207,6 +208,8 @@ void Edit_Tick() {
 		case Edit_ChangePat:
 			if (displayEDIT == 0) {
 				Edit_State = Edit_Wait;
+				updatePattern();
+				updateWall();
 				displayClear();
 			} else if (displayEDIT == 1) {
 				Edit_State = Edit_Display;
@@ -806,6 +809,7 @@ void kpReceiver() {
 				
 			case 0x40:
 				slideLED();
+				break;
 				
 			default:
 				break;
