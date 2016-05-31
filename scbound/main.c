@@ -134,6 +134,9 @@ void WinTick() {
 		}
 		else {
 			// All levels complete
+			displayLED = 0;
+			while (!USART_IsSendReady(0));
+			USART_Send(0x69, 0);
 		}
 	}
 }
